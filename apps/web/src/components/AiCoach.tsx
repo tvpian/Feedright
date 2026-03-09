@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Sparkles, ChevronDown, ChevronUp, Send, RefreshCw } from "lucide-react";
 
 interface Props {
@@ -23,7 +23,11 @@ export function AiCoach({ userId, date }: Props) {
   const [response, setResponse]   = useState("");
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState("");
-  const abortRef = useRef<AbortController | null>(null);
+  const abortRef    = useRef<AbortController | null>(null);
+  // Buffer streaming tokens and flush to state at most every 80ms
+  // This prevents a React re-render (and input stutter) on every single token
+  const bufferRef   = useRef("");
+  const flushRef    = useRef<ReturnType<typeof setInterval> | null>(null);
 
   async function ask(overrideQuestion?: string) {
     if (loading) {
@@ -71,6 +75,9 @@ export function AiCoach({ userId, date }: Props) {
         );
       }
     } finally {
+      // Stop interval, do one final flush so the complete response is shown
+      if (flushRef.current) clearInterval(flushRef.current);
+      setResponse(bufferRef.current);
       setLoading(false);
     }
   }
@@ -83,7 +90,10 @@ export function AiCoach({ userId, date }: Props) {
   }
 
   // Render the text response: **bold headers**, bullet lines, plain paragraphs
-  function renderResponse(text: string) {
+  // Memoised so it only re-runs when `response` changes, not on every render
+  const renderedResponse = useMemo(() => renderResponseText(response), [response]);
+
+  function renderResponseText(text: string) {
     const lines = text.split("\n");
     return lines.map((line, i) => {
       // Full-line bold header: **text**
@@ -156,7 +166,7 @@ export function AiCoach({ userId, date }: Props) {
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3.5 space-y-0.5 min-h-[56px]">
               {response ? (
                 <>
-                  {renderResponse(response)}
+                  {renderedResponse}
                   {/* Blinking cursor while streaming */}
                   {loading && (
                     <span className="inline-block w-1 h-3.5 bg-brand-400 animate-pulse rounded-sm align-text-bottom ml-0.5" />
