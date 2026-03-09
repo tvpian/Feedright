@@ -28,6 +28,8 @@ export function AiCoach({ userId, date }: Props) {
   // This prevents a React re-render (and input stutter) on every single token
   const bufferRef   = useRef("");
   const flushRef    = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Ref to scroll the response card into view when streaming completes
+  const responseRef = useRef<HTMLDivElement | null>(null);
 
   async function ask(overrideQuestion?: string) {
     if (loading) {
@@ -64,7 +66,8 @@ export function AiCoach({ userId, date }: Props) {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        setResponse((prev) => prev + decoder.decode(value, { stream: true }));
+        // Write to ref only — interval handles the state update at 80ms cadence
+        bufferRef.current += decoder.decode(value, { stream: true });
       }
     } catch (e: any) {
       if (e?.name !== "AbortError") {
@@ -79,6 +82,8 @@ export function AiCoach({ userId, date }: Props) {
       if (flushRef.current) clearInterval(flushRef.current);
       setResponse(bufferRef.current);
       setLoading(false);
+      // Scroll the response card into view so the user can read without hunting
+      setTimeout(() => responseRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
     }
   }
 
@@ -149,7 +154,11 @@ export function AiCoach({ userId, date }: Props) {
           <div className="text-left">
             <p className="text-sm font-semibold text-gray-900">AI Coach</p>
             <p className="text-[11px] text-gray-500">
-              {loading ? "Analysing your nutrition…" : response ? "Tap to view your advice" : "Personalised advice for your goals"}
+              {loading
+                ? "Analysing your nutrition…"
+                : response
+                  ? open ? "Your personalised advice" : "Tap to read your advice"
+                  : "Personalised advice for your goals"}
             </p>
           </div>
         </div>
@@ -163,7 +172,7 @@ export function AiCoach({ userId, date }: Props) {
         <div className="px-4 pb-4 space-y-3">
           {/* Response / loading area */}
           {(loading || response) && (
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3.5 space-y-0.5 min-h-[56px]">
+            <div ref={responseRef} className="bg-white/80 backdrop-blur-sm rounded-xl p-3.5 space-y-0.5 min-h-[56px]">
               {response ? (
                 <>
                   {renderedResponse}
