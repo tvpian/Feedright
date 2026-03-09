@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "nutrition-core"
+version = "0.1.0"
+description = "Deterministic nutrition engine for NutriTrack"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["nutrition_core*"]
+
+[tool.pytest.ini_options]
+testpaths = ["nutrition_core/tests"]
+pythonpath = ["."]

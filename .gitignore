@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Database (local dev data — do NOT commit)
+*.db
+*.db-shm
+*.db-wal
+*.db-bak
+*.db.existing
+
+# Alembic — keep migrations, ignore pycache inside
+alembic/versions/__pycache__/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+/tmp/
+
+# Next.js
+apps/web/.next/
+apps/web/out/
+apps/web/node_modules/
+
+# npm
+node_modules/
+.npm
+
+# TypeScript build output
+*.tsbuildinfo
+apps/web/tsconfig.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.vscode/*.code-workspace
+.idea/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# pyright
+pyrightconfig.json
