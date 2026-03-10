@@ -40,7 +40,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       const savedId = localStorage.getItem(STORAGE_KEY);
       const active = list.find((p) => p.id === savedId) ?? list[0] ?? null;
-      if (active) setProfileState(active);
+      setProfileState(active);
+      if (!active) localStorage.removeItem(STORAGE_KEY);
     } catch {
       /* API not yet available – silently ignore during SSR / cold start */
     } finally {

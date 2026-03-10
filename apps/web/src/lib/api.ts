@@ -37,6 +37,8 @@ async function _fetch<T>(url: string, init?: RequestInit): Promise<T> {
     const text = await res.text();
     throw new Error(`API error ${res.status}: ${text}`);
   }
+  // 204 No Content (e.g. DELETE) — no body to parse
+  if (res.status === 204) return undefined as unknown as T;
   return res.json() as Promise<T>;
 }
 
