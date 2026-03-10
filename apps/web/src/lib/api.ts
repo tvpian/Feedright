@@ -60,6 +60,21 @@ export const api = {
       }),
     delete: (id: string) =>
       _fetch<void>(`${BASE}/profiles/${id}`, { method: "DELETE" }),
+    setPin: (id: string, pin: string) =>
+      _fetch<void>(`${BASE}/profiles/${id}/set-pin`, {
+        method: "POST",
+        body: JSON.stringify({ pin }),
+      }),
+    verifyPin: (id: string, pin: string) =>
+      _fetch<{ ok: boolean }>(`${BASE}/profiles/${id}/verify-pin`, {
+        method: "POST",
+        body: JSON.stringify({ pin }),
+      }),
+    removePin: (id: string) =>
+      _fetch<void>(`${BASE}/profiles/${id}/set-pin`, {
+        method: "POST",
+        body: JSON.stringify({ pin: "" }),
+      }),
   },
 
   // ── Foods ───────────────────────────────────────────────────────────────────
@@ -72,6 +87,12 @@ export const api = {
     get: (id: string) => _fetch<FoodItem>(`${BASE}/foods/${id}`),
     create: (data: Omit<FoodItem, "id" | "is_custom">) =>
       _fetch<FoodItem>(`${BASE}/foods`, { method: "POST", body: JSON.stringify(data) }),
+    searchExternal: (q: string) =>
+      _fetch<FoodItem[]>(`${BASE}/foods/external/search?q=${encodeURIComponent(q)}`),
+    lookupBarcode: (barcode: string) =>
+      _fetch<FoodItem>(`${BASE}/foods/external/barcode/${barcode}`),
+    importExternal: (food: FoodItem) =>
+      _fetch<FoodItem>(`${BASE}/foods/external/import`, { method: "POST", body: JSON.stringify(food) }),
   },
 
   // ── Logs ────────────────────────────────────────────────────────────────────

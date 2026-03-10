@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { format } from "date-fns";
-import { PlusCircle, RefreshCw, Copy, ChevronRight, AlertCircle, Scale, Zap } from "lucide-react";
+import { format, addDays, parseISO } from "date-fns";
+import { PlusCircle, RefreshCw, Copy, ChevronRight, AlertCircle, Scale, Zap, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
@@ -11,11 +11,14 @@ import { formatEntryAmount, HEALTH_GOALS } from "@/lib/types";
 import { NutrientGrid } from "@/components/NutrientGrid";
 import { LogFoodModal } from "@/components/LogFoodModal";
 import { AiCoach } from "@/components/AiCoach";
+import { MacroRings } from "@/components/MacroRings";
 
-const today = format(new Date(), "yyyy-MM-dd");
+const todayStr = format(new Date(), "yyyy-MM-dd");
 
 export default function DashboardPage() {
   const { profile, loading: userLoading } = useUser();
+  const [date, setDate]     = useState(todayStr);
+  const isToday             = date === todayStr;
   const [log, setLog] = useState<DailyLog | null>(null);
   const [gaps, setGaps] = useState<GapAnalysis | null>(null);
   const [logModal, setLogModal] = useState(false);
@@ -32,8 +35,8 @@ export default function DashboardPage() {
     setFetching(true);
     try {
       const [l, g, f, s] = await Promise.all([
-        api.logs.getDay(profile.id, today),
-        api.recommendations.getGaps(profile.id, today),
+        api.logs.getDay(profile.id, date),
+        api.recommendations.getGaps(profile.id, date),
         api.analytics.favorites(profile.id, 5).catch(() => [] as FavoriteFood[]),
         api.analytics.streaks(profile.id).catch(() => null),
       ]);
@@ -43,7 +46,7 @@ export default function DashboardPage() {
       setStreaks(s);
     } catch {}
     setFetching(false);
-  }, [profile]);
+  }, [profile, date]);
 
   // Load food details separately (non-blocking) so the main UI renders immediately
   useEffect(() => {
@@ -63,7 +66,7 @@ export default function DashboardPage() {
     if (!profile) return;
     setCopyingYesterday(true);
     try {
-      await api.logs.copyYesterday(profile.id, today);
+      await api.logs.copyYesterday(profile.id, date);
       await load();
     } catch {}
     setCopyingYesterday(false);
@@ -91,8 +94,10 @@ export default function DashboardPage() {
   }
 
   const calories = log?.nutrient_totals.calories ?? 0;
-  const calTarget = gaps?.gaps.find((g) => g.key === "calories")?.target ?? 2000;
-  const calPct = Math.min((calories / calTarget) * 100, 100);
+  const calTarget   = gaps?.gaps.find((g) => g.key === "calories")?.target ?? 2000;
+  const proteinTarget = gaps?.gaps.find((g) => g.key === "protein")?.target ?? 50;
+  const carbsTarget   = gaps?.gaps.find((g) => g.key === "carbs")?.target ?? 250;
+  const fatTarget     = gaps?.gaps.find((g) => g.key === "fat")?.target ?? 65;
 
   const statusCounts = gaps
     ? {
@@ -120,52 +125,45 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 pt-6 pb-4 space-y-5">
-      {/* Header */}
+      {/* Header with date navigation */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Today</h1>
-          <p className="text-sm text-gray-500">{format(new Date(), "EEEE, MMMM d")}</p>
-        </div>
         <button
-          onClick={load}
-          className="tap-target flex items-center justify-center text-gray-400 hover:text-brand-600"
+          onClick={() => setDate(format(addDays(parseISO(date), -1), "yyyy-MM-dd"))}
+          className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
         >
-          <RefreshCw size={20} className={fetching ? "animate-spin" : ""} />
+          <ChevronLeft size={20} />
         </button>
+        <div className="text-center">
+          <h1 className="text-lg font-bold text-gray-900">
+            {isToday ? "Today" : format(parseISO(date), "EEEE")}
+          </h1>
+          <p className="text-xs text-gray-500">{format(parseISO(date), "MMMM d, yyyy")}</p>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setDate(format(addDays(parseISO(date), 1), "yyyy-MM-dd"))}
+            disabled={isToday}
+            className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors disabled:opacity-30"
+          >
+            <ChevronRight size={20} />
+          </button>
+          <button
+            onClick={load}
+            className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-brand-600 transition-colors"
+          >
+            <RefreshCw size={18} className={fetching ? "animate-spin" : ""} />
+          </button>
+        </div>
       </div>
 
-      {/* Calorie ring / headline */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-        <div className="flex items-end justify-between mb-3">
-          <div>
-            <p className="text-4xl font-bold text-gray-900">{Math.round(calories)}</p>
-            <p className="text-sm text-gray-500">of {Math.round(calTarget)} kcal</p>
-          </div>
-          <div className="text-right">
-            <p className="text-2xl font-bold text-brand-600">{Math.round(calTarget - calories)}</p>
-            <p className="text-sm text-gray-500">remaining</p>
-          </div>
-        </div>
-        {/* Calorie progress bar */}
-        <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-          <div
-            className="h-full bg-brand-500 rounded-full transition-all duration-500"
-            style={{ width: `${calPct}%` }}
-          />
-        </div>
-
-        {/* Macro summary */}
-        <div className="grid grid-cols-3 gap-2 mt-4 text-center">
-          {(["protein", "fat", "carbs"] as const).map((key) => {
-            const val = log?.nutrient_totals?.[key] ?? 0;
-            return (
-              <div key={key} className="bg-gray-50 rounded-xl py-2">
-                <p className="text-base font-bold text-gray-900">{Math.round(val)}g</p>
-                <p className="text-xs text-gray-500 capitalize">{key}</p>
-              </div>
-            );
-          })}
-        </div>
+      {/* Macro rings */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+        <MacroRings
+          calories={calories} calTarget={calTarget}
+          protein={log?.nutrient_totals.protein ?? 0} proteinTarget={proteinTarget}
+          carbs={log?.nutrient_totals.carbs ?? 0} carbsTarget={carbsTarget}
+          fat={log?.nutrient_totals.fat ?? 0} fatTarget={fatTarget}
+        />
       </div>
 
       {/* Status overview */}
@@ -196,7 +194,7 @@ export default function DashboardPage() {
             </p>
           ))}
           <Link
-            href={`/recommendations/${today}`}
+            href={`/recommendations/${date}`}
             className="mt-2 flex items-center gap-1 text-xs font-semibold text-red-700 hover:underline"
           >
             Get recommendations <ChevronRight size={12} />
@@ -205,14 +203,14 @@ export default function DashboardPage() {
       )}
 
       {/* AI Coach */}
-      <AiCoach userId={profile.id} date={today} />
+      <AiCoach userId={profile.id} date={date} />
 
       {/* Today's log entries */}
       {(log?.entries.length ?? 0) > 0 && (
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
           <div className="px-4 pt-4 pb-2 flex items-center justify-between">
             <h2 className="font-semibold text-sm text-gray-700">Logged today</h2>
-            <Link href={`/log/${today}`} className="text-xs text-brand-600 hover:underline">
+            <Link href={`/log/${date}`} className="text-xs text-brand-600 hover:underline">
               Edit all
             </Link>
           </div>
@@ -336,7 +334,7 @@ export default function DashboardPage() {
 
       <LogFoodModal
         userId={profile.id}
-        date={today}
+        date={date}
         open={logModal}
         onClose={() => { setLogModal(false); setPreselectedFood(undefined); }}
         onAdded={load}

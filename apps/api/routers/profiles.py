@@ -1,9 +1,11 @@
 """Profiles router."""
 from __future__ import annotations
 
+import hashlib
 import json
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..database import UserDB, get_db
@@ -74,6 +76,35 @@ def delete_profile(user_id: str, db: Session = Depends(get_db)):
     db.commit()
 
 
+# ── PIN endpoints ───────────────────────────────────────────────────────────────────────────────
+
+class PinBody(BaseModel):
+    pin: str
+
+def _hash_pin(pin: str) -> str:
+    """SHA-256 hash of the 4-8 digit PIN (no bcrypt dep needed)."""
+    return hashlib.sha256(pin.strip().encode()).hexdigest()
+
+
+@router.post("/{user_id}/set-pin", status_code=204)
+def set_pin(user_id: str, body: PinBody, db: Session = Depends(get_db)):
+    """Set or update the PIN for a profile. Send empty string to remove."""
+    row = _get_or_404(user_id, db)
+    row.pin_hash = _hash_pin(body.pin) if body.pin.strip() else None
+    db.commit()
+
+
+@router.post("/{user_id}/verify-pin")
+def verify_pin(user_id: str, body: PinBody, db: Session = Depends(get_db)):
+    """Returns {ok: true} if PIN matches, 401 otherwise."""
+    row = _get_or_404(user_id, db)
+    if not row.pin_hash:
+        return {"ok": True, "message": "No PIN set"}
+    if _hash_pin(body.pin) == row.pin_hash:
+        return {"ok": True}
+    raise HTTPException(401, "Incorrect PIN")
+
+
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 def _get_or_404(user_id: str, db: Session) -> UserDB:
@@ -100,4 +131,5 @@ def _to_out(row: UserDB) -> ProfileOut:
         health_goals=json.loads(row.health_goals or "[]"),
         health_conditions=json.loads(row.health_conditions or "[]"),
         supplements=[SupplementIn(**s) for s in supps_raw],
+        has_pin=bool(row.pin_hash),
     )

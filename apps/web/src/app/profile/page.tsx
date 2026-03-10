@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@/lib/userContext";
 import { api } from "@/lib/api";
-import { User, ChevronRight, Settings, Scale, BookMarked, BarChart3 } from "lucide-react";
+import { User, ChevronRight, Settings, Scale, BookMarked, BarChart3, Lock, Unlock, KeySquare } from "lucide-react";
 import { HEALTH_GOALS, HEALTH_CONDITIONS, NUTRIENT_LABELS, NUTRIENT_UNITS } from "@/lib/types";
 import type { DailyTargets } from "@/lib/types";
 
@@ -17,8 +17,62 @@ const ACTIVITY_LABELS: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { profile, profiles, setProfile, loading } = useUser();
+  const { profile, profiles, setProfile, refreshProfiles, loading, lockProfile } = useUser();
   const [targetsData, setTargetsData] = useState<DailyTargets | null>(null);
+
+  // PIN management state
+  const [pinMode, setPinMode] = useState<"set" | "change" | "remove" | null>(null);
+  const [pinStep, setPinStep] = useState<1 | 2>(1);
+  const [pinInput, setPinInput] = useState("");
+  const [pinConfirm, setPinConfirm] = useState("");
+  const [pinError, setPinError] = useState("");
+  const [pinSuccess, setPinSuccess] = useState("");
+
+  async function handlePinSubmit() {
+    setPinError("");
+    if (pinMode === "remove") {
+      // Verify current PIN then remove
+      try {
+        const res = await api.profiles.verifyPin(profile!.id, pinInput);
+        if (res.ok) {
+          await api.profiles.removePin(profile!.id);
+          setPinSuccess("PIN removed");
+          setPinMode(null);
+          setPinInput("");
+          await refreshProfiles();
+          setTimeout(() => setPinSuccess(""), 3000);
+        }
+      } catch {
+        setPinError("Incorrect PIN");
+      }
+      return;
+    }
+    if (pinMode === "change" && pinStep === 1) {
+      // Verify current PIN first
+      try {
+        const res = await api.profiles.verifyPin(profile!.id, pinInput);
+        if (res.ok) {
+          setPinStep(2);
+          setPinInput("");
+        }
+      } catch {
+        setPinError("Incorrect current PIN");
+      }
+      return;
+    }
+    // set or change step 2: enter new PIN
+    if (pinInput.length < 4) { setPinError("PIN must be at least 4 digits"); return; }
+    if (!pinConfirm) { setPinError("Please confirm your PIN"); return; }
+    if (pinInput !== pinConfirm) { setPinError("PINs do not match"); return; }
+    await api.profiles.setPin(profile!.id, pinInput);
+    setPinSuccess("PIN saved");
+    setPinMode(null);
+    setPinInput("");
+    setPinConfirm("");
+    setPinStep(1);
+    await refreshProfiles();
+    setTimeout(() => setPinSuccess(""), 3000);
+  }
 
   useEffect(() => {
     if (profile?.id && profile.supplements?.length > 0) {
@@ -176,6 +230,98 @@ export default function ProfilePage() {
             </Link>
           </div>
 
+          {/* Security / PIN */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
+            <div className="flex items-center gap-2">
+              <KeySquare size={18} className="text-violet-500" />
+              <p className="font-semibold text-sm">Profile PIN</p>
+              {profile.has_pin && (
+                <span className="ml-auto text-[10px] px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full font-semibold">Active</span>
+              )}
+            </div>
+
+            {pinSuccess && (
+              <p className="text-xs text-green-600 font-medium">{pinSuccess}</p>
+            )}
+
+            {!pinMode ? (
+              <div className="flex gap-2">
+                {!profile.has_pin ? (
+                  <button
+                    onClick={() => { setPinMode("set"); setPinStep(2); setPinError(""); }}
+                    className="flex-1 py-2 text-xs font-semibold rounded-xl bg-violet-600 text-white hover:bg-violet-700"
+                  >
+                    Set PIN
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => { setPinMode("change"); setPinStep(1); setPinInput(""); setPinConfirm(""); setPinError(""); }}
+                      className="flex-1 py-2 text-xs font-semibold rounded-xl bg-violet-100 text-violet-700 hover:bg-violet-200"
+                    >
+                      Change PIN
+                    </button>
+                    <button
+                      onClick={() => { setPinMode("remove"); setPinInput(""); setPinError(""); }}
+                      className="flex-1 py-2 text-xs font-semibold rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100"
+                    >
+                      Remove PIN
+                    </button>
+                    <button
+                      onClick={() => lockProfile(profile.id)}
+                      className="flex-1 py-2 text-xs font-semibold rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    >
+                      Lock Now
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500">
+                  {pinMode === "remove" ? "Enter current PIN to confirm removal" :
+                   pinMode === "change" && pinStep === 1 ? "Enter current PIN" :
+                   "Enter new PIN (4–8 digits)"}
+                </p>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={8}
+                  placeholder="••••"
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ""))}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm tracking-widest"
+                />
+                {(pinMode === "set" || (pinMode === "change" && pinStep === 2)) && (
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={8}
+                    placeholder="Confirm ••••"
+                    value={pinConfirm}
+                    onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ""))}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm tracking-widest"
+                  />
+                )}
+                {pinError && <p className="text-xs text-rose-500">{pinError}</p>}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setPinMode(null); setPinInput(""); setPinConfirm(""); setPinError(""); setPinStep(1); }}
+                    className="flex-1 py-2 text-xs font-medium rounded-xl bg-gray-100 text-gray-600"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePinSubmit}
+                    className="flex-1 py-2 text-xs font-semibold rounded-xl bg-violet-600 text-white hover:bg-violet-700"
+                  >
+                    {pinMode === "remove" ? "Remove" : pinMode === "change" && pinStep === 1 ? "Next" : "Save"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Quick Links */}
           <div className="grid grid-cols-3 gap-2">
             <Link href="/weight" className="bg-white border rounded-xl p-3 text-center hover:bg-gray-50 transition-colors">
@@ -207,7 +353,10 @@ export default function ProfilePage() {
                         p.id === profile.id ? "bg-brand-50" : "hover:bg-gray-50"
                       }`}
                     >
-                      <span className="text-sm font-medium">{p.name}</span>
+                      <span className="flex items-center gap-2 text-sm font-medium">
+                        {p.has_pin && <Lock size={12} className="text-violet-400" />}
+                        {p.name}
+                      </span>
                       {p.id === profile.id && (
                         <span className="text-xs text-brand-600 font-semibold">Active</span>
                       )}

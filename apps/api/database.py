@@ -52,6 +52,7 @@ class UserDB(Base):
     avoid_foods         = Column(Text, default="[]")
     supplement_ids      = Column(Text, default="[]")
     is_active           = Column(Boolean, default=True)
+    pin_hash            = Column(String, nullable=True)   # bcrypt hash; NULL = no PIN
     # ── New holistic fields ──
     health_goals        = Column(Text, default="[]")       # JSON list of HealthGoal values
     health_conditions   = Column(Text, default="[]")       # JSON list of HealthCondition values

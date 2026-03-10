@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Search, TrendingUp } from "lucide-react";
+import { X, Search, TrendingUp, ScanBarcode, Globe } from "lucide-react";
 import { api } from "@/lib/api";
 import type { FoodItem, LogEntryCreate, WhatIfResponse } from "@/lib/types";
 import { MEAL_SLOTS, NUTRIENT_LABELS } from "@/lib/types";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
 
 interface Props {
   userId: string;
@@ -20,6 +21,9 @@ export function LogFoodModal({
 }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FoodItem[]>([]);
+  const [searchMode, setSearchMode] = useState<"local" | "external">("local");
+  const [externalLoading, setExternalLoading] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [selected, setSelected] = useState<FoodItem | null>(preselectedFood ?? null);
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState<"g" | string>("g");
@@ -65,10 +69,18 @@ export function LogFoodModal({
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
     const t = setTimeout(async () => {
-      try { setResults(await api.foods.search(query)); } catch {}
-    }, 250);
+      try {
+        if (searchMode === "local") {
+          setResults(await api.foods.search(query));
+        } else {
+          setExternalLoading(true);
+          setResults(await api.foods.searchExternal(query));
+          setExternalLoading(false);
+        }
+      } catch { setExternalLoading(false); }
+    }, searchMode === "local" ? 250 : 600);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, searchMode]);
 
   // What-if preview: debounce fetch when food & amount are set
   useEffect(() => {
@@ -95,8 +107,14 @@ export function LogFoodModal({
     if (g <= 0) { setError("Enter a valid amount."); return; }
     setSaving(true);
     try {
+      // If this food came from OFF (id starts with off_) import it first
+      let foodId = selected.id;
+      if (foodId.startsWith("off_")) {
+        const imported = await api.foods.importExternal(selected);
+        foodId = imported.id;
+      }
       await api.logs.addEntry(userId, date, {
-        food_id: selected.id,
+        food_id: foodId,
         amount_g: g,
         meal_slot: slot,
       } as LogEntryCreate);
@@ -112,6 +130,23 @@ export function LogFoodModal({
   if (!open) return null;
 
   return (
+    <>
+    {showScanner && (
+      <BarcodeScanner
+        onClose={() => setShowScanner(false)}
+        onScan={async (barcode) => {
+          setShowScanner(false);
+          try {
+            const food = await api.foods.lookupBarcode(barcode);
+            setSelected(food);
+            setUnit(food.default_unit !== "g" ? food.default_unit : "g");
+            setAmount(food.default_unit !== "g" ? "1" : String(food.default_serving_g));
+          } catch {
+            setError(`Barcode ${barcode} not found in Open Food Facts.`);
+          }
+        }}
+      />
+    )}
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40">
       <div className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[92vh] flex flex-col">
         {/* Header */}
@@ -126,6 +161,27 @@ export function LogFoodModal({
           {/* Search */}
           {!selected && (
             <div>
+              {/* Search type toggle + barcode button */}
+              <div className="flex gap-2 mb-2">
+                <div className="flex flex-1 bg-gray-100 rounded-xl p-0.5">
+                  <button type="button" onClick={() => setSearchMode("local")}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                      searchMode === "local" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500"
+                    }`}>
+                    My Foods
+                  </button>
+                  <button type="button" onClick={() => setSearchMode("external")}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-center gap-1 transition-colors ${
+                      searchMode === "external" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500"
+                    }`}>
+                    <Globe size={11} /> Open Food Facts
+                  </button>
+                </div>
+                <button type="button" onClick={() => setShowScanner(true)}
+                  className="p-2 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-600">
+                  <ScanBarcode size={18} />
+                </button>
+              </div>
               <div className="relative">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -133,9 +189,12 @@ export function LogFoodModal({
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search foods…"
+                  placeholder={searchMode === "local" ? "Search foods…" : "Search Open Food Facts…"}
                   className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
+                {externalLoading && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                )}
               </div>
               {results.length > 0 && (
                 <ul className="mt-2 border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
@@ -329,5 +388,6 @@ export function LogFoodModal({
         </div>
       </div>
     </div>
+    </>
   );
 }

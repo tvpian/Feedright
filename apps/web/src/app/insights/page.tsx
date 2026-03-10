@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
 import type { TrendResponse, StreakInfo, WeeklyAverages, FavoriteFood, DailyTargets } from "@/lib/types";
 import { NUTRIENT_LABELS, NUTRIENT_UNITS } from "@/lib/types";
+import { NutrientTrendChart } from "@/components/NutrientTrendChart";
 
 type Tab = "trends" | "averages" | "favorites";
 
@@ -96,6 +97,16 @@ export default function InsightsPage() {
       {/* Tab: Nutrient Trends */}
       {tab === "trends" && trends && (
         <div className="space-y-4">
+          {/* Multi-nutrient overview chart */}
+          <div className="bg-white rounded-2xl border p-4">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Daily targets hit (%)</h3>
+            <NutrientTrendChart
+              trends={trends}
+              targets={targets?.targets ? (targets.targets as unknown as Record<string, number>) : {}}
+            />
+          </div>
+
+          {/* Single-nutrient drill-down */}
           {/* Nutrient picker */}
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(NUTRIENT_LABELS).map(([key, label]) => (

@@ -61,6 +61,7 @@ export interface UserProfile {
   health_goals: string[];
   health_conditions: string[];
   supplements: SupplementInput[];
+  has_pin?: boolean;
 }
 
 export interface ProfileCreate extends Omit<UserProfile, "id"> {}

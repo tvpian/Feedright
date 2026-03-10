@@ -32,6 +32,7 @@ class ProfileCreate(BaseModel):
 
 class ProfileOut(ProfileCreate):
     id: str
+    has_pin: bool = False
 
     class Config:
         from_attributes = True
