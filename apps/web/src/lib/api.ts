@@ -56,6 +56,8 @@ export const api = {
         method: "PATCH",
         body: JSON.stringify(data),
       }),
+    delete: (id: string) =>
+      _fetch<void>(`${BASE}/profiles/${id}`, { method: "DELETE" }),
   },
 
   // ── Foods ───────────────────────────────────────────────────────────────────

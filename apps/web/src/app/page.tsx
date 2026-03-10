@@ -41,18 +41,21 @@ export default function DashboardPage() {
       setGaps(g);
       setFavorites(f);
       setStreaks(s);
-
-      // Load food data for deep-dive
-      const uniqueFoodIds = [...new Set(l.entries.map((e) => e.food_id))];
-      const foods = await Promise.all(uniqueFoodIds.map((id) => api.foods.get(id).catch(() => null)));
-      const map: Record<string, FoodItem> = {};
-      for (const fd of foods) {
-        if (fd) map[fd.id] = fd;
-      }
-      setFoodMap(map);
     } catch {}
     setFetching(false);
   }, [profile]);
+
+  // Load food details separately (non-blocking) so the main UI renders immediately
+  useEffect(() => {
+    if (!log) return;
+    const ids = [...new Set(log.entries.map((e) => e.food_id))];
+    if (!ids.length) { setFoodMap({}); return; }
+    Promise.all(ids.map((id) => api.foods.get(id).catch(() => null))).then((foods) => {
+      const map: Record<string, FoodItem> = {};
+      for (const fd of foods) { if (fd) map[fd.id] = fd; }
+      setFoodMap(map);
+    });
+  }, [log]);
 
   useEffect(() => { load(); }, [load]);
 

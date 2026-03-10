@@ -17,6 +17,7 @@ export default function EditProfilePage() {
   const { refreshProfiles, setProfile } = useUser();
   const [form, setForm] = useState<any>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [commonSupps, setCommonSupps] = useState<CommonSupplement[]>([]);
 
@@ -174,7 +175,27 @@ export default function EditProfilePage() {
           className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl disabled:opacity-50">
           {saving ? "Saving…" : "Save Changes"}
         </button>
-      </form>
+        {/* Danger zone */}
+        <div className="pt-2 border-t border-gray-100">
+          <button
+            type="button"
+            disabled={deleting}
+            onClick={async () => {
+              if (!confirm("Delete this profile? All its log entries and data will be permanently removed.")) return;
+              setDeleting(true);
+              try {
+                await api.profiles.delete(id);
+                await refreshProfiles();
+                router.push("/");
+              } catch {
+                setError("Failed to delete profile.");
+                setDeleting(false);
+              }
+            }}
+            className="w-full py-3 text-sm font-medium text-red-600 hover:bg-red-50 border border-red-200 rounded-2xl disabled:opacity-50 transition-colors">
+            {deleting ? "Deleting\u2026" : "Delete this profile"}
+          </button>
+        </div>      </form>
     </div>
   );
 }

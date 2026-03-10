@@ -18,18 +18,27 @@ const QUICK_QUESTIONS = [
 ];
 
 export function AiCoach({ userId, date }: Props) {
+  const storageKey = `aicoach-${userId}-${date}`;
+
   const [open, setOpen]           = useState(false);
   const [question, setQuestion]   = useState("");
-  const [response, setResponse]   = useState("");
+  // Initialise from sessionStorage so the response survives any page re-render
+  const [response, setResponseRaw] = useState<string>(() =>
+    typeof window !== "undefined" ? (sessionStorage.getItem(storageKey) ?? "") : ""
+  );
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState("");
-  const abortRef    = useRef<AbortController | null>(null);
-  // Buffer streaming tokens and flush to state at most every 80ms
-  // This prevents a React re-render (and input stutter) on every single token
-  const bufferRef   = useRef("");
-  const flushRef    = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Ref to scroll the response card into view when streaming completes
-  const responseRef = useRef<HTMLDivElement | null>(null);
+  const abortRef     = useRef<AbortController | null>(null);
+  const bufferRef    = useRef("");
+  const flushRef     = useRef<ReturnType<typeof setInterval> | null>(null);
+  const firstTokRef  = useRef(true);   // used to clear old response on first new token
+  const responseRef  = useRef<HTMLDivElement | null>(null);
+
+  /** Persist to sessionStorage every time response changes */
+  function setResponse(text: string) {
+    setResponseRaw(text);
+    try { sessionStorage.setItem(storageKey, text); } catch {}
+  }
 
   async function ask(overrideQuestion?: string) {
     if (loading) {
@@ -39,12 +48,23 @@ export function AiCoach({ userId, date }: Props) {
     }
 
     const q = overrideQuestion ?? (question.trim() || undefined);
-    setResponse("");
+    // Keep old response visible while waiting for the new one
     setError("");
     setLoading(true);
 
     const ctrl = new AbortController();
     abortRef.current = ctrl;
+
+    // Reset buffer, mark first token pending, start 80ms flush interval
+    bufferRef.current  = "";
+    firstTokRef.current = true;
+    flushRef.current = setInterval(() => {
+      if (bufferRef.current) {
+        // On first flush: clear the old response so new content takes over cleanly
+        if (firstTokRef.current) { firstTokRef.current = false; setResponseRaw(""); }
+        setResponse(bufferRef.current);
+      }
+    }, 80);
 
     try {
       const params = new URLSearchParams({ date });
@@ -78,11 +98,13 @@ export function AiCoach({ userId, date }: Props) {
         );
       }
     } finally {
-      // Stop interval, do one final flush so the complete response is shown
       if (flushRef.current) clearInterval(flushRef.current);
-      setResponse(bufferRef.current);
+      // Final flush — guarantees the complete text is always shown
+      if (bufferRef.current) {
+        if (firstTokRef.current) setResponseRaw("");
+        setResponse(bufferRef.current);
+      }
       setLoading(false);
-      // Scroll the response card into view so the user can read without hunting
       setTimeout(() => responseRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
     }
   }
