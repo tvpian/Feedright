@@ -59,34 +59,34 @@ export default function WeightPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 pt-6 pb-10">
-      <h1 className="text-2xl font-bold mb-1">Weight Tracker</h1>
-      <p className="text-gray-500 text-sm mb-6">Track your weight over time</p>
+      <h1 className="text-2xl font-extrabold tracking-tight mb-0.5">Weight Tracker</h1>
+      <p className="text-gray-400 text-sm mb-6">Track your weight over time</p>
 
       {/* Quick Log */}
-      <div className="bg-white rounded-2xl border p-4 mb-6 space-y-3">
-        <h2 className="text-sm font-semibold text-gray-700">Log Today&apos;s Weight</h2>
-        <div className="flex gap-2">
+      <div className="card p-5 mb-6 space-y-3">
+        <h2 className="text-sm font-bold text-gray-700">Log Today&apos;s Weight</h2>
+        <div className="flex gap-2 items-center">
           <input
             type="number"
             step="0.1"
             placeholder="e.g. 72.5"
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
-            className="flex-1 px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="input flex-1"
           />
-          <span className="flex items-center text-sm text-gray-500">kg</span>
+          <span className="text-sm font-semibold text-gray-400">kg</span>
         </div>
         <input
           type="text"
           placeholder="Notes (optional)"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="input"
         />
         <button
           onClick={handleLog}
           disabled={saving || !weightKg}
-          className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-colors"
+          className="btn-primary w-full py-3 disabled:opacity-50"
         >
           {saving ? "Saving…" : "Log Weight"}
         </button>
@@ -106,17 +106,18 @@ export default function WeightPage() {
       )}
 
       {/* Chart */}
-      <div className="bg-white rounded-2xl border p-4 mb-6">
+      <div className="card p-4 mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-700">Trend</h2>
-          <div className="flex gap-1">
+          <h2 className="text-sm font-bold text-gray-700">Trend</h2>
+          <div className="flex gap-1.5">
             {[7, 14, 30, 90].map((d) => (
               <button
                 key={d}
                 onClick={() => setDays(d)}
-                className={`px-2.5 py-1 text-xs rounded-full font-medium ${
-                  days === d ? "bg-brand-600 text-white" : "bg-gray-100 text-gray-600"
-                }`}
+                className="px-2.5 py-1 text-xs rounded-xl font-bold transition-all"
+                style={days === d
+                  ? { background: "linear-gradient(135deg,#0a7140,#3acb7d)", color: "white" }
+                  : { background: "#f3f4f6", color: "#6b7280" }}
               >
                 {d}d
               </button>
@@ -134,13 +135,29 @@ export default function WeightPage() {
                   key={pct}
                   x1="0" x2={entries.length * 40}
                   y1={10 + 140 * pct} y2={10 + 140 * pct}
-                  stroke="#f0f0f0" strokeWidth="1"
+                  stroke="#f3f4f6" strokeWidth="1"
                 />
               ))}
+              {/* Gradient fill */}
+              <defs>
+                <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#0a7140" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#0a7140" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <polyline
+                fill="url(#weightGrad)"
+                stroke="none"
+                points={[...entries.map((e, i) => {
+                  const x = i * 40 + 20;
+                  const y = 10 + 140 * (1 - (e.weight_kg - minW) / range);
+                  return `${x},${y}`;
+                }), `${(entries.length - 1) * 40 + 20},150`, `20,150`].join(" ")}
+              />
               {/* Line */}
               <polyline
                 fill="none"
-                stroke="#16a34a"
+                stroke="#0a7140"
                 strokeWidth="2.5"
                 strokeLinejoin="round"
                 points={entries
@@ -155,7 +172,7 @@ export default function WeightPage() {
               {entries.map((e, i) => {
                 const x = i * 40 + 20;
                 const y = 10 + 140 * (1 - (e.weight_kg - minW) / range);
-                return <circle key={e.id} cx={x} cy={y} r="4" fill="#16a34a" />;
+                return <circle key={e.id} cx={x} cy={y} r="4" fill="white" stroke="#0a7140" strokeWidth="2" />;
               })}
             </svg>
             <div className="flex justify-between text-[10px] text-gray-400 mt-1 px-2">
@@ -167,22 +184,22 @@ export default function WeightPage() {
       </div>
 
       {/* History */}
-      <div className="bg-white rounded-2xl border overflow-hidden">
-        <h2 className="text-sm font-semibold text-gray-700 p-4 border-b">History</h2>
+      <div className="card overflow-hidden">
+        <h2 className="text-sm font-bold text-gray-700 p-4 border-b border-black/[0.04]">History</h2>
         {loading ? (
           <p className="p-4 text-sm text-gray-400">Loading…</p>
         ) : entries.length === 0 ? (
           <p className="p-4 text-sm text-gray-400 text-center">No entries yet.</p>
         ) : (
-          <ul className="divide-y">
+          <ul className="divide-y divide-black/[0.04]">
             {[...entries].reverse().map((e) => (
-              <li key={e.id} className="flex items-center justify-between px-4 py-3">
+              <li key={e.id} className="flex items-center justify-between px-4 py-3.5">
                 <div>
-                  <span className="text-sm font-semibold">{e.weight_kg.toFixed(1)} kg</span>
+                  <span className="text-sm font-bold">{e.weight_kg.toFixed(1)} kg</span>
                   <span className="text-xs text-gray-400 ml-2">{e.log_date}</span>
                   {e.notes && <span className="text-xs text-gray-400 ml-2">— {e.notes}</span>}
                 </div>
-                <button onClick={() => handleDelete(e.id)} className="text-xs text-red-400 hover:text-red-600">
+                <button onClick={() => handleDelete(e.id)} className="text-xs font-semibold px-2.5 py-1 rounded-xl transition-all" style={{ color: "#be123c", background: "#fff1f2" }}>
                   Delete
                 </button>
               </li>
@@ -196,8 +213,8 @@ export default function WeightPage() {
 
 function StatCard({ label, value, color = "text-gray-800" }: { label: string; value: string; color?: string }) {
   return (
-    <div className="bg-white rounded-xl border p-3 text-center">
-      <div className="text-xs text-gray-500 mb-0.5">{label}</div>
+    <div className="card p-3 text-center">
+      <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">{label}</div>
       <div className={`text-sm font-bold ${color}`}>{value}</div>
     </div>
   );

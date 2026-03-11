@@ -22,30 +22,55 @@ export function BottomNav() {
   const path = usePathname();
 
   if (!profile) return null;
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-b">
-      <ul className="flex justify-around items-center h-16 px-2">
-        {NAV.map(({ label, icon: Icon, href }) => {
-          const active =
-            href === "/"
-              ? path === "/"
-              : path.startsWith(href.split("/").slice(0, 2).join("/"));
-          return (
-            <li key={label} className="flex-1">
-              <Link
-                href={href}
-                className={clsx(
-                  "flex flex-col items-center justify-center gap-0.5 h-full tap-target",
-                  active ? "text-brand-600" : "text-gray-500"
-                )}
-              >
-                <Icon size={22} />
-                <span className="text-[10px] font-medium">{label}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-3 px-4 safe-b pointer-events-none">
+      <nav
+        className="pointer-events-auto w-full max-w-sm rounded-3xl px-2 py-1.5"
+        style={{
+          background: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.8) inset, 0 0 0 1px rgba(0,0,0,0.06)",
+        }}
+      >
+        <ul className="flex justify-around items-center">
+          {NAV.map(({ label, icon: Icon, href }) => {
+            const active =
+              href === "/"
+                ? path === "/"
+                : path.startsWith(href.split("/").slice(0, 2).join("/"));
+            return (
+              <li key={label} className="flex-1">
+                <Link
+                  href={href}
+                  className="flex flex-col items-center justify-center gap-0.5 py-2 tap-target"
+                >
+                  <div
+                    className={clsx(
+                      "flex items-center justify-center w-10 h-8 rounded-xl transition-all duration-200",
+                      active
+                        ? "bg-brand-600 text-white shadow-sm"
+                        : "text-gray-400"
+                    )}
+                  >
+                    <Icon size={active ? 19 : 21} strokeWidth={active ? 2.5 : 1.8} />
+                  </div>
+                  <span
+                    className={clsx(
+                      "text-[10px] font-semibold leading-none transition-colors duration-200",
+                      active ? "text-brand-600" : "text-gray-400"
+                    )}
+                  >
+                    {label}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </div>
   );
 }
+

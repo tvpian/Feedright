@@ -72,17 +72,18 @@ export default function RecommendationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Next Food</h1>
-          <p className="text-sm text-gray-500">{format(new Date(date + "T12:00:00"), "EEEE, MMMM d")}</p>
+          <h1 className="text-2xl font-extrabold tracking-tight">Next Food</h1>
+          <p className="text-sm text-gray-400">{format(new Date(date + "T12:00:00"), "EEEE, MMMM d")}</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="tap-target flex items-center justify-center text-gray-500 border border-gray-200 rounded-xl px-2"
+            className="tap-target flex items-center justify-center rounded-xl px-3 transition-all"
+            style={showFilters ? { background: "#edfcf2", color: "#0a7140" } : { background: "#f3f4f6", color: "#6b7280" }}
           >
-            <Filter size={18} />
+            <Filter size={17} />
           </button>
-          <button onClick={load} className="tap-target flex items-center justify-center text-gray-400">
+          <button onClick={load} className="tap-target flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-100">
             <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
@@ -90,19 +91,18 @@ export default function RecommendationsPage() {
 
       {/* Filters dropdown */}
       {showFilters && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm space-y-3">
+        <div className="card p-4 space-y-3">
           <div>
-            <p className="text-sm font-semibold mb-2">Constraints</p>
+            <p className="text-sm font-bold mb-2">Constraints</p>
             <div className="flex flex-wrap gap-2">
               {CONSTRAINTS_OPTIONS.map(({ label, value }) => (
                 <button
                   key={value}
                   onClick={() => toggleConstraint(value)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                    constraints.includes(value)
-                      ? "bg-brand-600 text-white border-brand-600"
-                      : "bg-white text-gray-700 border-gray-300"
-                  }`}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style={constraints.includes(value)
+                    ? { background: "linear-gradient(135deg,#0a7140,#3acb7d)", color: "white" }
+                    : { background: "#f3f4f6", color: "#6b7280" }}
                 >
                   {label}
                 </button>
@@ -110,18 +110,18 @@ export default function RecommendationsPage() {
             </div>
           </div>
           <div>
-            <p className="text-sm font-semibold mb-1">Max calories</p>
+            <p className="text-sm font-bold mb-1.5">Max calories</p>
             <input
               type="number"
               value={maxCal}
               onChange={(e) => setMaxCal(e.target.value)}
               placeholder="e.g. 300"
-              className="w-36 px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="input w-36"
             />
           </div>
           <button
             onClick={load}
-            className="w-full py-2 bg-brand-600 text-white rounded-xl text-sm font-semibold"
+            className="btn-primary w-full py-2.5"
           >
             Apply
           </button>
@@ -130,21 +130,20 @@ export default function RecommendationsPage() {
 
       {/* Gap summary */}
       {gaps && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-          <p className="text-sm font-semibold text-gray-700 mb-3">Current gaps</p>
+        <div className="card p-4">
+          <p className="text-sm font-bold text-gray-700 mb-3">Current gaps</p>
           <NutrientGrid gaps={gaps.gaps} compact showOnlyIncomplete />
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex rounded-xl overflow-hidden border border-gray-200">
+      <div className="flex bg-gray-100 rounded-2xl p-1">
         {(["singles", "combos"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === tab ? "bg-brand-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
-            }`}
+            className="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all"
+            style={activeTab === tab ? { background: "white", color: "#0a7140", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" } : { color: "#9ca3af" }}
           >
             {tab === "singles" ? "Individual Foods" : "Combos"}
           </button>

@@ -100,11 +100,11 @@ export default function ProfilePage() {
   return (
     <div className="max-w-xl mx-auto px-4 pt-6 pb-4 space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Profile</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight">Profile</h1>
         {profile && (
           <Link
             href={`/profile/${profile.id}/edit`}
-            className="tap-target flex items-center justify-center text-gray-500"
+            className="tap-target flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-100"
           >
             <Settings size={22} />
           </Link>
@@ -112,12 +112,12 @@ export default function ProfilePage() {
       </div>
 
       {!profile ? (
-        <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-10 text-center text-gray-400 space-y-3">
+        <div className="card p-10 text-center space-y-3">
           <User size={36} className="mx-auto text-gray-300" />
-          <p className="text-sm">No profile found.</p>
+          <p className="text-sm text-gray-400">No profile found.</p>
           <Link
             href="/profile/new"
-            className="inline-block px-6 py-2.5 bg-brand-600 text-white font-semibold rounded-xl text-sm"
+            className="inline-block btn-primary text-sm"
           >
             Create Profile
           </Link>
@@ -125,33 +125,46 @@ export default function ProfilePage() {
       ) : (
         <>
           {/* Current profile card */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-xl">
+          <div
+            className="rounded-2xl p-5 text-white relative overflow-hidden space-y-4"
+            style={{ background: "linear-gradient(135deg,#0a7140,#16b05e,#3acb7d)" }}
+          >
+            <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full opacity-10"
+              style={{ background: "radial-gradient(circle, white, transparent)" }}
+            />
+            <div className="flex items-center gap-4 relative">
+              <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-white font-extrabold text-2xl shrink-0" style={{ backdropFilter: "blur(8px)" }}>
                 {profile.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h2 className="text-lg font-bold">{profile.name}</h2>
-                <p className="text-sm text-gray-500">
+                <h2 className="text-xl font-extrabold text-white">{profile.name}</h2>
+                <p className="text-sm text-white/70 font-medium">
                   {profile.age} yrs · {profile.sex} · {profile.weight_kg}kg · {profile.height_cm}cm
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <InfoTile label="Activity" value={ACTIVITY_LABELS[profile.activity_level] ?? profile.activity_level} />
-              <InfoTile label="BMI" value={(profile.weight_kg / ((profile.height_cm / 100) ** 2)).toFixed(1)} />
+            <div className="grid grid-cols-2 gap-2.5 relative">
+              {[
+                { label: "Activity", value: ACTIVITY_LABELS[profile.activity_level] ?? profile.activity_level },
+                { label: "BMI", value: (profile.weight_kg / ((profile.height_cm / 100) ** 2)).toFixed(1) },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.15)" }}>
+                  <p className="text-[10px] font-semibold text-white/60 uppercase tracking-wide">{label}</p>
+                  <p className="text-sm font-bold text-white mt-0.5">{value}</p>
+                </div>
+              ))}
             </div>
 
             {/* Health Goals */}
             {profile.health_goals?.length > 0 && (
               <div>
-                <p className="text-xs text-gray-500 font-medium mb-1">Health Goals</p>
+                <p className="text-[10px] font-semibold text-white/60 uppercase tracking-wide mb-2">Health Goals</p>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.health_goals.map((g) => {
                     const goal = HEALTH_GOALS.find((hg) => hg.value === g);
                     return (
-                      <span key={g} className="text-xs px-2.5 py-1 bg-brand-50 text-brand-700 rounded-full font-medium border border-brand-200">
+                      <span key={g} className="text-xs px-2.5 py-1 rounded-xl font-semibold text-white" style={{ background: "rgba(255,255,255,0.2)" }}>
                         {goal ? `${goal.icon} ${goal.label}` : g}
                       </span>
                     );
@@ -159,16 +172,17 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
+          </div>
 
             {/* Health Conditions */}
             {profile.health_conditions?.length > 0 && (
-              <div>
-                <p className="text-xs text-gray-500 font-medium mb-1">Health Conditions</p>
+              <div className="card p-4 space-y-2">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Health Conditions</p>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.health_conditions.map((c) => {
                     const cond = HEALTH_CONDITIONS.find((hc) => hc.value === c);
                     return (
-                      <span key={c} className="text-xs px-2.5 py-1 bg-rose-50 text-rose-700 rounded-full font-medium border border-rose-200">
+                      <span key={c} className="text-xs px-2.5 py-1 rounded-xl font-semibold" style={{ background: "#fff1f2", color: "#be123c" }}>
                         {cond?.label || c}
                       </span>
                     );
@@ -179,42 +193,42 @@ export default function ProfilePage() {
 
             {/* Supplements */}
             {profile.supplements?.length > 0 && (
-              <div>
-                <p className="text-xs text-gray-500 font-medium mb-1">Supplements ({profile.supplements.length})</p>
+              <div className="card p-4 space-y-3">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Supplements ({profile.supplements.length})</p>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.supplements.map((s) => (
-                    <span key={s.name} className="text-xs px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-medium border border-emerald-200">
+                    <span key={s.name} className="text-xs px-2.5 py-1 rounded-xl font-semibold" style={{ background: "#ecfdf5", color: "#065f46" }}>
                       {s.name.replace(/_/g, " ")}
                     </span>
                   ))}
                 </div>
                 {/* Supplement impact on targets */}
                 {supplementOffsets.length > 0 && (
-                  <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-                    <p className="text-[10px] font-semibold text-emerald-800 mb-1.5">Supplement Impact on Daily Targets</p>
+                  <div className="rounded-xl p-3" style={{ background: "#ecfdf5" }}>
+                    <p className="text-[10px] font-bold mb-1.5" style={{ color: "#065f46" }}>Supplement Impact on Daily Targets</p>
                     <div className="space-y-1">
                       {supplementOffsets.map((o) => (
                         <div key={o.key} className="flex items-center justify-between text-[11px]">
-                          <span className="text-emerald-700">{NUTRIENT_LABELS[o.key] || o.key}</span>
-                          <span className="text-emerald-600">
+                          <span style={{ color: "#047857" }}>{NUTRIENT_LABELS[o.key] || o.key}</span>
+                          <span style={{ color: "#059669" }}>
                             {o.raw.toFixed(1)} → <span className="font-semibold">{o.adjusted.toFixed(1)}</span> {NUTRIENT_UNITS[o.key]}
-                            <span className="text-emerald-500 ml-1">({o.covered.toFixed(1)} covered)</span>
+                            <span className="ml-1 opacity-70">({o.covered.toFixed(1)} covered)</span>
                           </span>
                         </div>
                       ))}
                     </div>
-                    <p className="text-[9px] text-emerald-500 mt-1">Your food targets are reduced because supplements already cover these amounts.</p>
+                    <p className="text-[9px] mt-1" style={{ color: "#6ee7b7" }}>Your food targets are reduced because supplements already cover these amounts.</p>
                   </div>
                 )}
               </div>
             )}
 
             {profile.dietary_preferences.length > 0 && (
-              <div>
-                <p className="text-xs text-gray-500 font-medium mb-1">Dietary preferences</p>
+              <div className="card p-4 space-y-2">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Dietary Preferences</p>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.dietary_preferences.map((p) => (
-                    <span key={p} className="text-xs px-2.5 py-1 bg-brand-50 text-brand-700 rounded-full font-medium">
+                    <span key={p} className="text-xs px-2.5 py-1 rounded-xl font-semibold" style={{ background: "#edfcf2", color: "#0a7140" }}>
                       {p}
                     </span>
                   ))}
@@ -224,19 +238,20 @@ export default function ProfilePage() {
 
             <Link
               href={`/profile/${profile.id}/edit`}
-              className="flex items-center justify-between w-full py-2.5 px-4 bg-gray-50 rounded-xl text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+              className="flex items-center justify-between w-full py-2.5 px-4 rounded-xl text-sm font-semibold transition-colors" style={{ background: "#edfcf2", color: "#0a7140" }}
             >
               Edit profile <ChevronRight size={16} />
             </Link>
-          </div>
 
           {/* Security / PIN */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="card p-5 space-y-3">
             <div className="flex items-center gap-2">
-              <KeySquare size={18} className="text-violet-500" />
-              <p className="font-semibold text-sm">Profile PIN</p>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#f3f0ff" }}>
+                <KeySquare size={16} className="text-violet-600" />
+              </div>
+              <p className="font-bold text-sm">Profile PIN</p>
               {profile.has_pin && (
-                <span className="ml-auto text-[10px] px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full font-semibold">Active</span>
+                <span className="ml-auto text-[10px] px-2.5 py-0.5 rounded-xl font-bold" style={{ background: "#ede9fe", color: "#7c3aed" }}>Active</span>
               )}
             </div>
 
@@ -249,7 +264,7 @@ export default function ProfilePage() {
                 {!profile.has_pin ? (
                   <button
                     onClick={() => { setPinMode("set"); setPinStep(2); setPinError(""); }}
-                    className="flex-1 py-2 text-xs font-semibold rounded-xl bg-violet-600 text-white hover:bg-violet-700"
+                    className="flex-1 py-2.5 text-xs font-bold rounded-xl text-white transition-all" style={{ background: "#7c3aed" }}
                   >
                     Set PIN
                   </button>
@@ -257,19 +272,19 @@ export default function ProfilePage() {
                   <>
                     <button
                       onClick={() => { setPinMode("change"); setPinStep(1); setPinInput(""); setPinConfirm(""); setPinError(""); }}
-                      className="flex-1 py-2 text-xs font-semibold rounded-xl bg-violet-100 text-violet-700 hover:bg-violet-200"
+                      className="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all" style={{ background: "#ede9fe", color: "#7c3aed" }}
                     >
-                      Change PIN
+                      Change
                     </button>
                     <button
                       onClick={() => { setPinMode("remove"); setPinInput(""); setPinError(""); }}
-                      className="flex-1 py-2 text-xs font-semibold rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100"
+                      className="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all" style={{ background: "#fff1f2", color: "#be123c" }}
                     >
-                      Remove PIN
+                      Remove
                     </button>
                     <button
                       onClick={() => lockProfile(profile.id)}
-                      className="flex-1 py-2 text-xs font-semibold rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      className="flex-1 py-2.5 text-xs font-bold rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
                     >
                       Lock Now
                     </button>
@@ -290,7 +305,7 @@ export default function ProfilePage() {
                   placeholder="••••"
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ""))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm tracking-widest"
+                  className="input text-center tracking-widest"
                 />
                 {(pinMode === "set" || (pinMode === "change" && pinStep === 2)) && (
                   <input
@@ -300,20 +315,20 @@ export default function ProfilePage() {
                     placeholder="Confirm ••••"
                     value={pinConfirm}
                     onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ""))}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm tracking-widest"
+                    className="input text-center tracking-widest"
                   />
                 )}
-                {pinError && <p className="text-xs text-rose-500">{pinError}</p>}
+                {pinError && <p className="text-xs font-medium" style={{ color: "#be123c" }}>{pinError}</p>}
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setPinMode(null); setPinInput(""); setPinConfirm(""); setPinError(""); setPinStep(1); }}
-                    className="flex-1 py-2 text-xs font-medium rounded-xl bg-gray-100 text-gray-600"
+                    className="flex-1 py-2.5 text-xs font-semibold rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handlePinSubmit}
-                    className="flex-1 py-2 text-xs font-semibold rounded-xl bg-violet-600 text-white hover:bg-violet-700"
+                    className="flex-1 py-2.5 text-xs font-bold rounded-xl text-white transition-all" style={{ background: "#7c3aed" }}
                   >
                     {pinMode === "remove" ? "Remove" : pinMode === "change" && pinStep === 1 ? "Next" : "Save"}
                   </button>
@@ -323,42 +338,46 @@ export default function ProfilePage() {
           </div>
 
           {/* Quick Links */}
-          <div className="grid grid-cols-3 gap-2">
-            <Link href="/weight" className="bg-white border rounded-xl p-3 text-center hover:bg-gray-50 transition-colors">
-              <Scale size={20} className="mx-auto text-brand-600 mb-1" />
-              <span className="text-xs font-medium text-gray-700">Weight</span>
-            </Link>
-            <Link href="/saved-meals" className="bg-white border rounded-xl p-3 text-center hover:bg-gray-50 transition-colors">
-              <BookMarked size={20} className="mx-auto text-brand-600 mb-1" />
-              <span className="text-xs font-medium text-gray-700">Meals</span>
-            </Link>
-            <Link href="/insights" className="bg-white border rounded-xl p-3 text-center hover:bg-gray-50 transition-colors">
-              <BarChart3 size={20} className="mx-auto text-brand-600 mb-1" />
-              <span className="text-xs font-medium text-gray-700">Insights</span>
-            </Link>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { href: "/weight", icon: <Scale size={20} />, label: "Weight", bg: "#edfcf2", color: "#0a7140" },
+              { href: "/saved-meals", icon: <BookMarked size={20} />, label: "Meals", bg: "#eff6ff", color: "#1d4ed8" },
+              { href: "/insights", icon: <BarChart3 size={20} />, label: "Insights", bg: "#fefce8", color: "#854d0e" },
+            ].map(({ href, icon, label, bg, color }) => (
+              <Link key={href} href={href} className="card p-3 text-center transition-all hover:scale-105" style={{ touchAction: "manipulation" }}>
+                <div className="w-9 h-9 rounded-xl mx-auto flex items-center justify-center mb-1.5" style={{ background: bg, color }}>
+                  {icon}
+                </div>
+                <span className="text-xs font-semibold text-gray-700">{label}</span>
+              </Link>
+            ))}
           </div>
 
           {/* Switch profile */}
           {profiles.length > 1 && (
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-              <p className="px-4 py-3 text-sm font-semibold text-gray-600 border-b border-gray-100">
+            <div className="card overflow-hidden">
+              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-400 border-b border-black/[0.04]">
                 Switch profile
               </p>
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-black/[0.04]">
                 {profiles.map((p) => (
                   <li key={p.id}>
                     <button
                       onClick={() => setProfile(p)}
-                      className={`w-full text-left px-4 py-3 flex items-center justify-between ${
-                        p.id === profile.id ? "bg-brand-50" : "hover:bg-gray-50"
-                      }`}
+                      className="w-full text-left px-4 py-3.5 flex items-center gap-3 transition-colors hover:bg-gray-50"
                     >
-                      <span className="flex items-center gap-2 text-sm font-medium">
-                        {p.has_pin && <Lock size={12} className="text-violet-400" />}
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
+                        style={{ background: p.id === profile.id ? "linear-gradient(135deg,#0a7140,#3acb7d)" : "#e5e7eb", color: p.id === profile.id ? "white" : "#6b7280" }}
+                      >
+                        {p.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="flex items-center gap-1.5 text-sm font-semibold flex-1">
+                        {p.has_pin && <Lock size={11} className="text-violet-400" />}
                         {p.name}
                       </span>
                       {p.id === profile.id && (
-                        <span className="text-xs text-brand-600 font-semibold">Active</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-xl font-bold" style={{ background: "#edfcf2", color: "#0a7140" }}>Active</span>
                       )}
                     </button>
                   </li>
@@ -369,17 +388,17 @@ export default function ProfilePage() {
 
           <Link
             href="/profile/new"
-            className="flex items-center justify-center gap-2 w-full py-3 border border-brand-300 text-brand-700 font-semibold rounded-2xl text-sm hover:bg-brand-50 transition-colors"
+            className="btn-ghost flex items-center justify-center gap-2 w-full py-3 text-sm"
           >
-            Add another profile
+            + Add another profile
           </Link>
 
           {/* Log out */}
           <button
             onClick={switchProfile}
-            className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 text-gray-500 font-medium rounded-2xl text-sm hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm font-medium text-gray-500 hover:bg-gray-100 transition-all"
           >
-            <LogOut size={16} />
+            <LogOut size={15} />
             Log out / Switch profile
           </button>
         </>

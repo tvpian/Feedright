@@ -84,32 +84,37 @@ export default function DashboardPage() {
     // Has profiles but none active (locked) → show picker
     if (profiles.length > 0) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4">
-          <h1 className="text-2xl font-bold text-gray-900">Who's tracking today?</h1>
-          <p className="text-sm text-gray-500">Select a profile to continue</p>
-          <div className="w-full max-w-xs space-y-3 mt-2">
+        <div className="flex flex-col items-center justify-center min-h-screen gap-5 px-6">
+          <div className="text-center mb-1">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4" style={{ background: "linear-gradient(135deg,#0a7140,#3acb7d)" }}>
+              <span className="text-2xl">🥗</span>
+            </div>
+            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Who's tracking today?</h1>
+            <p className="text-sm text-gray-500 mt-1">Select your profile to continue</p>
+          </div>
+          <div className="w-full max-w-xs space-y-2.5">
             {profiles.map((p) => (
               <button
                 key={p.id}
                 onClick={() => setProfile(p)}
-                className="w-full flex items-center gap-4 px-5 py-4 bg-white border border-gray-200 hover:border-brand-400 rounded-2xl shadow-sm hover:bg-brand-50 transition-colors"
+                className="w-full flex items-center gap-4 px-4 py-3.5 bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-shadow group"
               >
-                <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-lg shrink-0">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg shrink-0" style={{ background: "linear-gradient(135deg,#0c8f4a,#3acb7d)" }}>
                   {p.name.charAt(0).toUpperCase()}
                 </div>
                 <span className="flex-1 text-left font-semibold text-gray-900">{p.name}</span>
                 {p.has_pin ? (
-                  <Lock size={16} className="text-violet-400 shrink-0" />
+                  <Lock size={15} className="text-violet-400 shrink-0" />
                 ) : (
-                  <ChevronRight size={16} className="text-gray-300 shrink-0" />
+                  <ChevronRight size={15} className="text-gray-300 group-hover:text-brand-500 shrink-0 transition-colors" />
                 )}
               </button>
             ))}
             <Link
               href="/profile/new"
-              className="flex items-center justify-center gap-2 w-full py-3 border border-dashed border-gray-300 text-gray-500 font-semibold rounded-2xl text-sm hover:bg-gray-50"
+              className="flex items-center justify-center gap-2 w-full py-3 border border-dashed border-gray-300 text-gray-400 font-semibold rounded-2xl text-sm hover:border-brand-400 hover:text-brand-600 transition-colors"
             >
-              + Add profile
+              + New profile
             </Link>
           </div>
         </div>
@@ -118,10 +123,10 @@ export default function DashboardPage() {
     // No profiles at all
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 text-center">
-        <AlertCircle size={40} className="text-orange-400" />
-        <h1 className="text-xl font-bold">No profile found</h1>
-        <p className="text-gray-500 text-sm">Create your profile to get started with nutrient tracking.</p>
-        <Link href="/profile/new" className="px-6 py-3 bg-brand-600 text-white font-semibold rounded-xl">
+        <div className="w-20 h-20 rounded-3xl flex items-center justify-center text-4xl mb-2" style={{ background: "linear-gradient(135deg,#fef3c7,#fde68a)" }}>🥗</div>
+        <h1 className="text-2xl font-extrabold tracking-tight">Welcome to FeedRight</h1>
+        <p className="text-gray-500 text-sm max-w-xs">Your intelligent nutrition companion. Create a profile to start tracking.</p>
+        <Link href="/profile/new" className="btn-primary mt-2 w-full max-w-xs justify-center">
           Create Profile
         </Link>
       </div>
@@ -195,27 +200,25 @@ export default function DashboardPage() {
       <div className={`space-y-5 transition-opacity duration-200 ${fetching ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
 
       {/* Macro rings */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-        <MacroRings
+      <MacroRings
           calories={calories} calTarget={calTarget}
           protein={log?.nutrient_totals.protein ?? 0} proteinTarget={proteinTarget}
           carbs={log?.nutrient_totals.carbs ?? 0} carbsTarget={carbsTarget}
           fat={log?.nutrient_totals.fat ?? 0} fatTarget={fatTarget}
         />
-      </div>
 
       {/* Status overview */}
       {statusCounts && (
         <div className="grid grid-cols-4 gap-2 text-center">
           {[
-            { label: "Met",      count: statusCounts.complete, color: "text-brand-600 bg-brand-50" },
-            { label: "Close",    count: statusCounts.close,    color: "text-yellow-600 bg-yellow-50" },
-            { label: "Low",      count: statusCounts.low,      color: "text-orange-600 bg-orange-50" },
-            { label: "Critical", count: statusCounts.critical, color: "text-red-600 bg-red-50" },
-          ].map(({ label, count, color }) => (
-            <div key={label} className={`rounded-xl py-2 px-1 ${color}`}>
-              <p className="text-xl font-bold">{count}</p>
-              <p className="text-[11px] font-medium">{label}</p>
+            { label: "Met",      count: statusCounts.complete, bg: "#edfcf2", fg: "#0a7140", dot: "#16b05e" },
+            { label: "Close",    count: statusCounts.close,    bg: "#fefce8", fg: "#92400e", dot: "#f59e0b" },
+            { label: "Low",      count: statusCounts.low,      bg: "#fff7ed", fg: "#9a3412", dot: "#f97316" },
+            { label: "Critical", count: statusCounts.critical, bg: "#fef2f2", fg: "#991b1b", dot: "#ef4444" },
+          ].map(({ label, count, bg, fg, dot }) => (
+            <div key={label} className="rounded-2xl py-3 px-1" style={{ background: bg }}>
+              <p className="text-xl font-extrabold" style={{ color: fg }}>{count}</p>
+              <p className="text-[10px] font-semibold mt-0.5" style={{ color: fg, opacity: 0.7 }}>{label}</p>
             </div>
           ))}
         </div>
@@ -223,19 +226,29 @@ export default function DashboardPage() {
 
       {/* Critical alerts */}
       {criticalGaps.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-1">
-          <p className="text-sm font-semibold text-red-700 mb-2">Still critical today</p>
+        <div className="rounded-2xl p-4 space-y-2" style={{ background: "linear-gradient(135deg,#fef2f2,#fff5f5)", boxShadow: "0 0 0 1px rgba(239,68,68,0.15)" }}>
+          <div className="flex items-center gap-2 mb-1">
+            <AlertCircle size={15} className="text-red-500" />
+            <p className="text-sm font-semibold text-red-700">Nutrition gaps today</p>
+          </div>
           {criticalGaps.map((g) => (
-            <p key={g.key} className="text-xs text-red-600">
-              • {NUTRIENT_LABELS[g.key] ?? g.key} — {g.consumed.toFixed(1)} / {g.target.toFixed(1)}{" "}
-              ({g.percent_complete.toFixed(0)}%)
-            </p>
+            <div key={g.key} className="flex items-center gap-2">
+              <div className="flex-1">
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="font-medium text-red-700">{NUTRIENT_LABELS[g.key] ?? g.key}</span>
+                  <span className="text-red-400">{g.percent_complete.toFixed(0)}%</span>
+                </div>
+                <div className="h-1.5 bg-red-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-red-400 rounded-full" style={{ width: `${g.percent_complete}%` }} />
+                </div>
+              </div>
+            </div>
           ))}
           <Link
             href={`/recommendations/${date}`}
-            className="mt-2 flex items-center gap-1 text-xs font-semibold text-red-700 hover:underline"
+            className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-800"
           >
-            Get recommendations <ChevronRight size={12} />
+            Fix with food recommendations <ChevronRight size={12} />
           </Link>
         </div>
       )}
@@ -245,25 +258,28 @@ export default function DashboardPage() {
 
       {/* Today's log entries */}
       {(log?.entries.length ?? 0) > 0 && (
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="card overflow-hidden">
           <div className="px-4 pt-4 pb-2 flex items-center justify-between">
             <h2 className="font-semibold text-sm text-gray-700">Logged today</h2>
-            <Link href={`/log/${date}`} className="text-xs text-brand-600 hover:underline">
-              Edit all
+            <Link href={`/log/${date}`} className="text-xs text-brand-600 font-semibold hover:text-brand-700">
+              See all →
             </Link>
           </div>
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-black/[0.04]">
             {log!.entries.slice(0, 5).map((e) => (
-              <li key={e.id} className="px-4 py-2.5 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">{e.food_name}</p>
-                  <p className="text-xs text-gray-500">{e.meal_slot} · {formatEntryAmount(e)}</p>
+              <li key={e.id} className="px-4 py-3 flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg bg-brand-50 flex items-center justify-center shrink-0">
+                  <span className="text-xs font-bold text-brand-600">{e.food_name?.charAt(0) ?? "?"}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{e.food_name}</p>
+                  <p className="text-xs text-gray-400">{e.meal_slot} · {formatEntryAmount(e)}</p>
                 </div>
               </li>
             ))}
             {log!.entries.length > 5 && (
-              <li className="px-4 py-2 text-xs text-center text-gray-400">
-                +{log!.entries.length - 5} more
+              <li className="px-4 py-2.5 text-xs text-center text-gray-400">
+                +{log!.entries.length - 5} more entries
               </li>
             )}
           </ul>
@@ -272,7 +288,7 @@ export default function DashboardPage() {
 
       {/* Nutrient breakdown */}
       {gaps && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+        <div className="card p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-sm text-gray-700">Nutrients</h2>
             <button
@@ -294,12 +310,12 @@ export default function DashboardPage() {
 
       {/* Quick-Log Favorites */}
       {favorites.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+        <div className="card p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-sm text-gray-700">Quick Log</h2>
-            <Link href="/insights" className="text-xs text-brand-600 hover:underline">All favorites</Link>
+            <Link href="/insights" className="text-xs text-brand-600 font-semibold hover:text-brand-700">All favorites →</Link>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-0.5 px-0.5">
             {favorites.map((f) => (
               <button
                 key={f.food_id}
@@ -310,10 +326,11 @@ export default function DashboardPage() {
                     setLogModal(true);
                   } catch {}
                 }}
-                className="flex-shrink-0 bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-left hover:bg-brand-100 transition-colors"
+                className="flex-shrink-0 rounded-2xl px-3.5 py-2.5 text-left transition-all duration-150 hover:scale-[1.02] active:scale-95"
+                style={{ background: "linear-gradient(135deg,#edfcf2,#d3f8e0)", boxShadow: "0 1px 4px rgba(12,143,74,0.12)" }}
               >
-                <div className="text-xs font-semibold text-brand-700 truncate max-w-[100px]">{f.food_name}</div>
-                <div className="text-[10px] text-brand-500">{f.count}x logged</div>
+                <div className="text-xs font-bold text-brand-700 truncate max-w-[90px]">{f.food_name}</div>
+                <div className="text-[10px] text-brand-500 font-medium mt-0.5">{f.count}× logged</div>
               </button>
             ))}
           </div>
@@ -322,27 +339,29 @@ export default function DashboardPage() {
 
       {/* Health Goals & Streak */}
       {(profile.health_goals?.length > 0 || (streaks && streaks.current_streak > 0)) && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+        <div className="card p-4">
           {streaks && streaks.current_streak > 0 && (
-            <div className="flex items-center gap-2 mb-3">
-              <Zap size={16} className="text-amber-500" />
-              <span className="text-sm font-semibold text-gray-700">{streaks.current_streak}-day streak!</span>
-              <span className="text-xs text-gray-400">Best: {streaks.longest_streak}d</span>
+            <div className="flex items-center gap-3 mb-3 p-3 rounded-xl" style={{ background: "linear-gradient(135deg,#fffbeb,#fef3c7)" }}>
+              <div className="text-2xl">🔥</div>
+              <div>
+                <p className="text-sm font-bold text-amber-800">{streaks.current_streak}-day streak!</p>
+                <p className="text-xs text-amber-600">Personal best: {streaks.longest_streak} days</p>
+              </div>
             </div>
           )}
           {profile.health_goals?.length > 0 && (
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2.5">
                 <h2 className="font-semibold text-sm text-gray-700">Your Goals</h2>
-                <Link href="/weight" className="flex items-center gap-1 text-xs text-brand-600 hover:underline">
-                  <Scale size={12} /> Weight
+                <Link href="/weight" className="flex items-center gap-1 text-xs text-brand-600 font-semibold hover:text-brand-700">
+                  <Scale size={12} /> Weight log
                 </Link>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {profile.health_goals.map((g) => {
                   const goal = HEALTH_GOALS.find((hg) => hg.value === g);
                   return (
-                    <span key={g} className="px-2.5 py-1 bg-brand-50 text-brand-700 text-xs font-medium rounded-full border border-brand-200">
+                    <span key={g} className="px-2.5 py-1.5 text-xs font-semibold rounded-xl" style={{ background: "#edfcf2", color: "#0a7140" }}>
                       {goal ? `${goal.icon} ${goal.label}` : g}
                     </span>
                   );
@@ -355,17 +374,18 @@ export default function DashboardPage() {
       </div>{/* end fade wrapper */}
 
       {/* FAB + copy yesterday */}
-      <div className="fixed bottom-20 right-4 flex flex-col gap-2 items-end z-40">
+      <div className="fixed bottom-24 right-4 flex flex-col gap-2 items-end z-40">
         <button
           onClick={copyYesterday}
           disabled={copyingYesterday}
-          className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-full shadow text-xs font-medium hover:bg-gray-50"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold text-gray-600 transition-all"
+          style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", boxShadow: "0 2px 12px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)" }}
         >
           <Copy size={13} /> {copyingYesterday ? "Copying…" : "Copy yesterday"}
         </button>
         <button
           onClick={() => setLogModal(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-full shadow-lg text-sm transition-colors"
+          className="fab"
         >
           <PlusCircle size={18} /> Log Food
         </button>

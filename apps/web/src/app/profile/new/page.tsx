@@ -94,24 +94,23 @@ export default function NewProfilePage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 pt-6 pb-10">
-      <h1 className="text-2xl font-bold mb-2">Create Your Profile</h1>
-      <p className="text-gray-500 text-sm mb-6">
-        Tell us about yourself, your goals, and health conditions — we&apos;ll personalize your nutrient targets automatically.
+      <h1 className="text-2xl font-extrabold tracking-tight mb-1">Create Your Profile</h1>
+      <p className="text-gray-400 text-sm mb-6">
+        Tell us about yourself — we&apos;ll personalize your nutrient targets automatically.
       </p>
 
       {/* Step indicators */}
-      <div className="flex items-center gap-1 mb-8">
+      <div className="flex items-center gap-1.5 mb-8">
         {steps.map((s, i) => (
           <button
             key={s.key}
             onClick={() => setStep(s.key)}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors ${
-              i === stepIdx
-                ? "bg-brand-600 text-white"
-                : i < stepIdx
-                ? "bg-brand-100 text-brand-700"
-                : "bg-gray-100 text-gray-400"
-            }`}
+            className="flex-1 py-2 text-[11px] font-bold rounded-xl transition-all"
+            style={i === stepIdx
+              ? { background: "linear-gradient(135deg,#0a7140,#3acb7d)", color: "white" }
+              : i < stepIdx
+              ? { background: "#edfcf2", color: "#0a7140" }
+              : { background: "#f3f4f6", color: "#9ca3af" }}
           >
             {s.label}
           </button>
@@ -165,11 +164,10 @@ export default function NewProfilePage() {
                   key={g.value}
                   type="button"
                   onClick={() => toggleInList("health_goals", g.value)}
-                  className={`flex items-center gap-2 py-3 px-4 rounded-xl text-sm font-medium border transition-all ${
-                    active
-                      ? "bg-brand-50 text-brand-700 border-brand-500 ring-2 ring-brand-200"
-                      : "bg-white text-gray-700 border-gray-200 hover:border-brand-300"
-                  }`}
+                  className="flex items-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all"
+                  style={active
+                    ? { background: "linear-gradient(135deg,#0a7140,#3acb7d)", color: "white", boxShadow: "0 2px 8px rgba(12,143,74,0.2)" }
+                    : { background: "#f9fafb", color: "#374151", border: "1px solid #e5e7eb" }}
                 >
                   <span className="text-lg">{g.icon}</span>
                   <span>{g.label}</span>
@@ -198,11 +196,10 @@ export default function NewProfilePage() {
                   key={c.value}
                   type="button"
                   onClick={() => toggleInList("health_conditions", c.value)}
-                  className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-all text-left ${
-                    active
-                      ? "bg-rose-50 text-rose-700 border-rose-400 ring-2 ring-rose-200"
-                      : "bg-white text-gray-700 border-gray-200 hover:border-rose-300"
-                  }`}
+                  className="py-2.5 px-3 rounded-xl text-sm font-semibold transition-all text-left"
+                  style={active
+                    ? { background: "#fff1f2", color: "#be123c", border: "2px solid #fda4af" }
+                    : { background: "#f9fafb", color: "#374151", border: "1px solid #e5e7eb" }}
                 >
                   {c.label}
                 </button>
@@ -259,11 +256,10 @@ export default function NewProfilePage() {
                   type="button"
                   key={d}
                   onClick={() => toggleInList("dietary_preferences", d)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                    form.dietary_preferences.includes(d)
-                      ? "bg-brand-600 text-white border-brand-600"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-brand-400"
-                  }`}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style={form.dietary_preferences.includes(d)
+                    ? { background: "linear-gradient(135deg,#0a7140,#3acb7d)", color: "white" }
+                    : { background: "#f3f4f6", color: "#6b7280" }}
                 >
                   {d.replace("_", "-")}
                 </button>
@@ -272,8 +268,8 @@ export default function NewProfilePage() {
           </Field>
 
           {/* Summary Card */}
-          <div className="bg-gray-50 rounded-2xl border p-4 space-y-2 text-sm">
-            <h3 className="font-semibold text-gray-800">Profile Summary</h3>
+          <div className="card p-4 space-y-2 text-sm">
+            <h3 className="font-bold text-gray-800">Profile Summary</h3>
             <Row label="Name" value={form.name || "—"} />
             <Row label="Age / Sex" value={`${form.age} / ${form.sex}`} />
             <Row label="Weight / Height" value={`${form.weight_kg} kg / ${form.height_cm} cm`} />
@@ -290,7 +286,7 @@ export default function NewProfilePage() {
             <button
               type="button"
               onClick={() => setStep("supplements")}
-              className="flex-1 py-3 border border-gray-300 rounded-2xl text-sm font-semibold text-gray-600 hover:bg-gray-50"
+              className="btn-ghost flex-1 py-3"
             >
               &larr; Back
             </button>
@@ -298,7 +294,7 @@ export default function NewProfilePage() {
               type="button"
               onClick={handleSubmit}
               disabled={saving}
-              className="flex-[2] py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl text-base disabled:opacity-50 transition-colors"
+              className="btn-primary flex-[2] py-3.5 text-base disabled:opacity-50"
             >
               {saving ? "Creating…" : "Create Profile & Start Tracking"}
             </button>
@@ -313,12 +309,12 @@ function NavButtons({ onPrev, onNext }: { onPrev?: () => void; onNext?: () => vo
   return (
     <div className="flex gap-3 pt-2">
       {onPrev && (
-        <button type="button" onClick={onPrev} className="flex-1 py-3 border border-gray-300 rounded-2xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
+        <button type="button" onClick={onPrev} className="btn-ghost flex-1 py-3">
           &larr; Back
         </button>
       )}
       {onNext && (
-        <button type="button" onClick={onNext} className={`${onPrev ? "flex-[2]" : "w-full"} py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl text-sm transition-colors`}>
+        <button type="button" onClick={onNext} className={`btn-primary ${onPrev ? "flex-[2]" : "w-full"} py-3`}>
           Next &rarr;
         </button>
       )}
@@ -344,4 +340,4 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-const INPUT = "w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white";
+const INPUT = "input";

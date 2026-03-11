@@ -142,24 +142,24 @@ export default function LogPage() {
   const waterPct = water ? Math.min((water.total_ml / water.goal_ml) * 100, 100) : 0;
 
   return (
-    <div className="max-w-xl mx-auto px-4 pt-6 pb-4 space-y-5">
+    <div className="max-w-xl mx-auto px-4 pt-6 pb-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Food Log</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-extrabold tracking-tight">Food Log</h1>
+          <p className="text-sm text-gray-400 font-medium">
             {format(new Date(date + "T12:00:00"), "EEEE, MMMM d")}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={copyYesterday}
             disabled={copying}
             title="Copy yesterday's log"
-            className="tap-target flex items-center justify-center text-gray-400 hover:text-brand-600 disabled:opacity-40"
+            className="tap-target flex items-center justify-center text-gray-400 hover:text-brand-600 disabled:opacity-40 rounded-xl hover:bg-gray-100"
           >
             {copying ? <RefreshCw size={19} className="animate-spin" /> : <Copy size={19} />}
           </button>
-          <button onClick={load} className="tap-target flex items-center justify-center text-gray-400">
+          <button onClick={load} className="tap-target flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-100">
             <RefreshCw size={20} />
           </button>
         </div>
@@ -167,33 +167,35 @@ export default function LogPage() {
 
       {/* Calorie summary bar */}
       {log && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex justify-around text-center">
+        <div className="rounded-2xl p-4 flex justify-around text-center" style={{ background: "linear-gradient(135deg,#0a7140,#16b05e)", boxShadow: "0 4px 20px rgba(12,143,74,0.25)" }}>
           {(["calories", "protein", "fat", "carbs"] as const).map((k) => (
             <div key={k}>
-              <p className="text-lg font-bold">{Math.round(log.nutrient_totals[k])}</p>
-              <p className="text-xs text-gray-500 capitalize">{k === "calories" ? "kcal" : `g ${k}`}</p>
+              <p className="text-xl font-extrabold text-white">{Math.round(log.nutrient_totals[k])}</p>
+              <p className="text-[11px] font-medium text-white/60 capitalize">{k === "calories" ? "kcal" : `g ${k}`}</p>
             </div>
           ))}
         </div>
       )}
 
       {/* Water tracker */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm space-y-3">
+      <div className="card p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Droplets size={18} className="text-blue-500" />
+            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
+              <Droplets size={15} className="text-blue-500" />
+            </div>
             <span className="text-sm font-semibold text-gray-700">Water</span>
           </div>
-          <span className="text-sm font-medium text-gray-600">
+          <span className="text-sm font-bold text-blue-600">
             {water ? Math.round(water.total_ml) : 0}
-            <span className="text-gray-400 font-normal"> / {water?.goal_ml ?? 2500} ml</span>
+            <span className="text-xs text-gray-400 font-normal"> / {water?.goal_ml ?? 2500} ml</span>
           </span>
         </div>
         {/* Progress bar */}
-        <div className="h-2 bg-blue-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-blue-50 rounded-full overflow-hidden">
           <div
-            className="h-full bg-blue-400 rounded-full transition-all duration-300"
-            style={{ width: `${waterPct}%` }}
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${waterPct}%`, background: "linear-gradient(90deg,#38bdf8,#0ea5e9)" }}
           />
         </div>
         {/* Quick-add buttons */}
@@ -203,7 +205,8 @@ export default function LogPage() {
               key={ml}
               onClick={() => addWater(ml)}
               disabled={addingWater}
-              className="flex-1 py-1.5 text-xs font-medium rounded-xl border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 disabled:opacity-40 transition-colors"
+              className="flex-1 py-2 text-xs font-semibold rounded-xl text-blue-600 disabled:opacity-40 transition-colors"
+              style={{ background: "#eff6ff" }}
             >
               +{ml}ml
             </button>
@@ -215,12 +218,13 @@ export default function LogPage() {
             {water.entries.map((e) => (
               <span
                 key={e.id}
-                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 border border-blue-100 rounded-full text-xs text-blue-700"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold text-blue-600"
+                style={{ background: "#eff6ff" }}
               >
                 {Math.round(e.amount_ml)}ml
                 <button
                   onClick={() => deleteWaterEntry(e.id)}
-                  className="ml-0.5 text-blue-300 hover:text-red-400"
+                  className="ml-0.5 text-blue-300 hover:text-red-400 transition-colors"
                 >
                   <X size={10} />
                 </button>
@@ -232,30 +236,32 @@ export default function LogPage() {
 
       {/* Grouped log entries */}
       {slotGroups.length === 0 ? (
-        <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-8 text-center text-gray-400">
-          <p className="text-sm">Nothing logged yet. Tap + to add food.</p>
+        <div className="card p-10 text-center">
+          <div className="text-4xl mb-3">🥗</div>
+          <p className="font-semibold text-gray-700">Nothing logged yet</p>
+          <p className="text-sm text-gray-400 mt-1">Tap + to add your first food</p>
         </div>
       ) : (
         slotGroups.map(({ slot, entries }) => {
           const tot = slotTotals(entries);
           return (
-            <div key={slot} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-              <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gray-700">{slot}</h3>
-                <div className="flex gap-3 text-xs text-gray-400">
-                  <span>{Math.round(tot.cal)} kcal</span>
-                  <span>P {tot.prot.toFixed(1)}g</span>
-                  <span>F {tot.fat.toFixed(1)}g</span>
-                  <span>C {tot.carbs.toFixed(1)}g</span>
+            <div key={slot} className="card overflow-hidden">
+              <div className="px-4 py-3 flex items-center justify-between" style={{ background: "#F7F6F2" }}>
+                <h3 className="text-sm font-bold text-gray-700">{slot}</h3>
+                <div className="flex gap-2 text-xs font-semibold">
+                  <span className="text-gray-500">{Math.round(tot.cal)} kcal</span>
+                  <span className="text-sky-600">P {tot.prot.toFixed(0)}g</span>
+                  <span className="text-amber-600">C {tot.carbs.toFixed(0)}g</span>
+                  <span className="text-emerald-600">F {tot.fat.toFixed(0)}g</span>
                 </div>
               </div>
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-black/[0.04]">
                 {entries.map((entry) => (
                   <li key={entry.id} className="px-4 py-3 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{entry.food_name}</p>
+                      <p className="font-semibold text-sm truncate text-gray-900">{entry.food_name}</p>
                       {editingId === entry.id ? (
-                        <div className="flex items-center gap-1.5 mt-1">
+                        <div className="flex items-center gap-1.5 mt-1.5">
                           <input
                             ref={editRef}
                             type="number"
@@ -266,7 +272,7 @@ export default function LogPage() {
                               if (e.key === "Enter") saveEdit(entry);
                               if (e.key === "Escape") cancelEdit();
                             }}
-                            className="w-20 px-2 py-0.5 text-xs border border-brand-400 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-500"
+                            className="w-20 px-2.5 py-1 text-xs border border-brand-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
                             min={0}
                             step="any"
                           />
@@ -274,18 +280,18 @@ export default function LogPage() {
                           <button
                             onClick={() => saveEdit(entry)}
                             disabled={saving}
-                            className="p-0.5 text-green-500 hover:text-green-700"
+                            className="flex items-center justify-center w-6 h-6 rounded-full bg-brand-600 text-white disabled:opacity-40"
                           >
-                            <Check size={14} />
+                            <Check size={12} />
                           </button>
-                          <button onClick={cancelEdit} className="p-0.5 text-gray-400 hover:text-gray-600">
-                            <X size={14} />
+                          <button onClick={cancelEdit} className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-500">
+                            <X size={12} />
                           </button>
                         </div>
                       ) : (
                         <button
                           onClick={() => startEdit(entry)}
-                          className="text-xs text-gray-500 hover:text-brand-600 hover:underline text-left"
+                          className="text-xs text-gray-400 hover:text-brand-600 transition-colors text-left mt-0.5"
                         >
                           {formatEntryAmount(entry)}
                         </button>
@@ -295,16 +301,16 @@ export default function LogPage() {
                       <>
                         <button
                           onClick={() => startEdit(entry)}
-                          className="tap-target flex items-center justify-center text-gray-300 hover:text-brand-500"
+                          className="tap-target flex items-center justify-center text-gray-300 hover:text-brand-500 transition-colors"
                         >
                           <Pencil size={15} />
                         </button>
                         <button
                           onClick={() => deleteEntry(entry)}
                           disabled={deleting === entry.id}
-                          className="tap-target flex items-center justify-center text-red-400 hover:text-red-600 disabled:opacity-40"
+                          className="tap-target flex items-center justify-center text-gray-300 hover:text-red-500 disabled:opacity-40 transition-colors"
                         >
-                          <Trash2 size={17} />
+                          <Trash2 size={16} />
                         </button>
                       </>
                     )}
@@ -321,7 +327,7 @@ export default function LogPage() {
         <>
           <button
             onClick={() => setModal(true)}
-            className="fixed bottom-20 right-4 flex items-center gap-2 px-5 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-full shadow-lg text-sm z-40"
+            className="fab"
           >
             <PlusCircle size={18} /> Add Food
           </button>

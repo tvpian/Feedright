@@ -228,13 +228,13 @@ export function LogFoodModal({
         }}
       />
     )}
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40">
-      <div className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
+      <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b">
-          <h2 className="text-lg font-semibold">Log Food</h2>
-          <button onClick={onClose} className="tap-target flex items-center justify-center text-gray-500">
-            <X size={22} />
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-black/[0.06]">
+          <h2 className="text-lg font-extrabold">Log Food</h2>
+          <button onClick={onClose} className="tap-target flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-100">
+            <X size={20} />
           </button>
         </div>
 
@@ -279,14 +279,14 @@ export function LogFoodModal({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={searchMode === "local" ? "Search my foods…" : "Search USDA Food DB…"}
-                  className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="input pl-9"
                 />
                 {externalLoading && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
                 )}
               </div>
               {results.length > 0 && (
-                <ul className="mt-2 border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
+                <ul className="mt-2 card overflow-hidden divide-y divide-black/[0.04]">
                   {results.map((f) => (
                     <li key={f.id}>
                       <button
@@ -302,10 +302,10 @@ export function LogFoodModal({
                           setQuery("");
                           setResults([]);
                         }}
-                        className="w-full text-left px-4 py-2.5 hover:bg-brand-50 transition-colors"
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors"
                       >
-                        <div className="font-medium text-sm">{f.name}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="font-semibold text-sm">{f.name}</div>
+                        <div className="text-xs text-gray-400">
                           {f.nutrients_per_100g.calories} kcal / 100g · {f.category}
                         </div>
                       </button>
@@ -329,13 +329,13 @@ export function LogFoodModal({
               {searchMode === "create" && (
                 <form onSubmit={handleCreateFood} className="space-y-3 mt-1">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Food name *</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Food name *</label>
                     <input
                       type="text"
                       value={createName}
                       onChange={(e) => setCreateName(e.target.value)}
                       placeholder="e.g. Homemade Pancake"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      className="input"
                     />
                   </div>
                   <p className="text-xs text-gray-400 -mb-1">Nutrients per 100g</p>
@@ -347,7 +347,7 @@ export function LogFoodModal({
                       ["Carbs (g)",       createCarbs,   setCreateCarbs],
                     ] as [string, string, (v: string) => void][]).map(([label, val, setter]) => (
                       <div key={label}>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">{label}</label>
                         <input
                           type="number"
                           inputMode="decimal"
@@ -355,14 +355,14 @@ export function LogFoodModal({
                           onChange={(e) => setter(e.target.value)}
                           min={0}
                           step="any"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                          className="input"
                         />
                       </div>
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Default serving (g)</label>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Default serving (g)</label>
                       <input
                         type="number"
                         inputMode="decimal"
@@ -370,15 +370,15 @@ export function LogFoodModal({
                         onChange={(e) => setCreateServing(e.target.value)}
                         min={1}
                         step="any"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        className="input"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Category</label>
                       <select
                         value={createCategory}
                         onChange={(e) => setCreateCategory(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                        className="input"
                       >
                         {["Grain","Protein","Dairy","Vegetable","Fruit","Fat","Beverage","Other"].map((c) => (
                           <option key={c} value={c}>{c}</option>
@@ -386,11 +386,11 @@ export function LogFoodModal({
                       </select>
                     </div>
                   </div>
-                  {createError && <p className="text-xs text-red-600">{createError}</p>}
+                  {createError && <p className="text-xs font-semibold" style={{ color: "#be123c" }}>{createError}</p>}
                   <button
                     type="submit"
                     disabled={creating}
-                    className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl disabled:opacity-50 text-sm transition-colors"
+                    className="btn-primary w-full py-2.5 disabled:opacity-50"
                   >
                     {creating ? "Creating…" : "Create & Select Food"}
                   </button>
@@ -401,10 +401,10 @@ export function LogFoodModal({
 
           {/* Selected food */}
           {selected && (
-            <div className="bg-brand-50 border border-brand-200 rounded-xl p-3 flex items-start justify-between gap-2">
+            <div className="rounded-2xl p-3.5 flex items-start justify-between gap-2" style={{ background: "#edfcf2" }}>
               <div>
-                <div className="font-semibold text-sm">{selected.name}</div>
-                <div className="text-xs text-gray-600 mt-0.5">
+                <div className="font-bold text-sm" style={{ color: "#0a7140" }}>{selected.name}</div>
+                <div className="text-xs mt-0.5 text-gray-500">
                   {selected.nutrients_per_100g.calories} kcal · {selected.nutrients_per_100g.protein}g protein per 100g
                 </div>
               </div>
@@ -412,7 +412,7 @@ export function LogFoodModal({
                 onClick={() => setSelected(null)}
                 className="text-gray-400 hover:text-gray-600 tap-target flex items-center justify-center"
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
           )}
@@ -448,7 +448,7 @@ export function LogFoodModal({
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                         unit === u
                           ? "bg-brand-600 text-white border-brand-600"
-                          : "bg-white text-gray-700 border-gray-300 hover:border-brand-400"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
                       {u}
@@ -469,7 +469,7 @@ export function LogFoodModal({
                       : `e.g. 2 ${altUnitLabel}s`
                     : "e.g. 150"
                 }
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="input"
                 min={0}
                 step="any"
               />
@@ -486,10 +486,10 @@ export function LogFoodModal({
 
             {/* What-If Preview */}
             {selected && amountInGrams > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+              <div className="rounded-2xl p-3" style={{ background: "#eff6ff" }}>
                 <div className="flex items-center gap-1.5 mb-2">
-                  <TrendingUp size={14} className="text-blue-600" />
-                  <span className="text-xs font-semibold text-blue-700">What-If Preview</span>
+                  <TrendingUp size={13} style={{ color: "#2563eb" }} />
+                  <span className="text-xs font-bold" style={{ color: "#1d4ed8" }}>What-If Preview</span>
                 </div>
                 {whatIfLoading ? (
                   <p className="text-xs text-blue-400">Calculating…</p>
@@ -528,18 +528,17 @@ export function LogFoodModal({
 
             {/* Meal slot */}
             <div>
-              <label className="block text-sm font-medium mb-1">Meal</label>
+              <label className="block text-sm font-bold mb-2">Meal</label>
               <div className="flex flex-wrap gap-2">
                 {MEAL_SLOTS.map((s) => (
                   <button
                     type="button"
                     key={s}
                     onClick={() => setSlot(s)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                      slot === s
-                        ? "bg-brand-600 text-white border-brand-600"
-                        : "bg-white text-gray-700 border-gray-300 hover:border-brand-400"
-                    }`}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                    style={slot === s
+                      ? { background: "linear-gradient(135deg,#0a7140,#3acb7d)", color: "white" }
+                      : { background: "#f3f4f6", color: "#6b7280" }}
                   >
                     {s}
                   </button>
@@ -547,12 +546,12 @@ export function LogFoodModal({
               </div>
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-xs font-semibold mt-1" style={{ color: "#be123c" }}>{error}</p>}
 
             <button
               type="submit"
               disabled={!selected || saving}
-              className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl disabled:opacity-50 transition-colors"
+              className="btn-primary w-full py-3.5 disabled:opacity-50"
             >
               {saving ? "Saving…" : "Add to Log"}
             </button>

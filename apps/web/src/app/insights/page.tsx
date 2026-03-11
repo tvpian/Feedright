@@ -52,27 +52,28 @@ export default function InsightsPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 pt-6 pb-10">
-      <h1 className="text-2xl font-bold mb-1">Insights</h1>
-      <p className="text-gray-500 text-sm mb-4">Your nutrition analytics &amp; patterns</p>
+      <h1 className="text-2xl font-extrabold tracking-tight mb-0.5">Insights</h1>
+      <p className="text-gray-400 text-sm mb-5">Your nutrition analytics &amp; patterns</p>
 
       {/* Streaks Card */}
       {streaks && (
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <StatCard label="Current Streak" value={`${streaks.current_streak}d`} icon="🔥" />
-          <StatCard label="Best Streak" value={`${streaks.longest_streak}d`} icon="🏆" />
-          <StatCard label="Days Logged" value={`${streaks.total_logged_days}`} icon="📊" />
+          <StatCard label="Current Streak" value={`${streaks.current_streak}d`} icon="🔥" bg="#fff7ed" color="#9a3412" />
+          <StatCard label="Best Streak" value={`${streaks.longest_streak}d`} icon="🏆" bg="#fefce8" color="#854d0e" />
+          <StatCard label="Days Logged" value={`${streaks.total_logged_days}`} icon="📊" bg="#edfcf2" color="#0a7140" />
         </div>
       )}
 
       {/* Time Period Selector */}
-      <div className="flex gap-1 mb-4">
+      <div className="flex gap-2 mb-5">
         {[7, 14, 30].map((d) => (
           <button
             key={d}
             onClick={() => setDays(d)}
-            className={`px-3 py-1.5 text-xs rounded-full font-semibold ${
-              days === d ? "bg-brand-600 text-white" : "bg-gray-100 text-gray-600"
-            }`}
+            className="px-4 py-2 text-xs rounded-xl font-bold transition-all"
+            style={days === d
+              ? { background: "linear-gradient(135deg,#0a7140,#3acb7d)", color: "white", boxShadow: "0 2px 8px rgba(12,143,74,0.25)" }
+              : { background: "#f3f4f6", color: "#6b7280" }}
           >
             {d} days
           </button>
@@ -80,14 +81,13 @@ export default function InsightsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b mb-4">
-        {([["trends", "Nutrient Trends"], ["averages", "Averages & Alerts"], ["favorites", "Top Foods"]] as const).map(([key, label]) => (
+      <div className="flex bg-gray-100 rounded-2xl p-1 mb-5">
+        {([ ["trends", "Trends"], ["averages", "Averages"], ["favorites", "Top Foods"]] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex-1 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
-              tab === key ? "border-brand-600 text-brand-600" : "border-transparent text-gray-400"
-            }`}
+            className="flex-1 py-2 text-xs font-bold rounded-xl transition-all"
+            style={tab === key ? { background: "white", color: "#0a7140", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" } : { color: "#9ca3af" }}
           >
             {label}
           </button>
@@ -98,8 +98,8 @@ export default function InsightsPage() {
       {tab === "trends" && trends && (
         <div className="space-y-4">
           {/* Multi-nutrient overview chart */}
-          <div className="bg-white rounded-2xl border p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Daily targets hit (%)</h3>
+          <div className="card p-4">
+            <h3 className="text-sm font-bold text-gray-700 mb-3">Daily targets hit (%)</h3>
             <NutrientTrendChart
               trends={trends}
               targets={targets?.targets ? (targets.targets as unknown as Record<string, number>) : {}}
@@ -113,11 +113,10 @@ export default function InsightsPage() {
               <button
                 key={key}
                 onClick={() => setSelectedNutrient(key)}
-                className={`px-2.5 py-1 text-xs rounded-full font-medium transition-colors ${
-                  selectedNutrient === key
-                    ? "bg-brand-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
+                className="px-2.5 py-1 text-xs rounded-xl font-semibold transition-all"
+                style={selectedNutrient === key
+                  ? { background: "linear-gradient(135deg,#0a7140,#3acb7d)", color: "white" }
+                  : { background: "#f3f4f6", color: "#6b7280" }}
               >
                 {label}
               </button>
@@ -137,12 +136,12 @@ export default function InsightsPage() {
       {tab === "averages" && averages && (
         <div className="space-y-4">
           {averages.low_nutrients.length > 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-              <h3 className="text-sm font-semibold text-amber-800 mb-2">⚠️ Consistently Low Nutrients</h3>
-              <p className="text-xs text-amber-700 mb-2">These nutrients have been below 60% of your target over the last {days} days:</p>
+            <div className="rounded-2xl p-4 space-y-3" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
+              <h3 className="text-sm font-bold" style={{ color: "#92400e" }}>⚠️ Consistently Low Nutrients</h3>
+              <p className="text-xs" style={{ color: "#b45309" }}>Below 60% of target over {days} days:</p>
               <div className="flex flex-wrap gap-1.5">
                 {averages.low_nutrients.map((n) => (
-                  <span key={n} className="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full">
+                  <span key={n} className="px-2.5 py-1 text-xs font-bold rounded-xl" style={{ background: "#fef3c7", color: "#92400e" }}>
                     {NUTRIENT_LABELS[n] || n}
                   </span>
                 ))}
@@ -150,28 +149,29 @@ export default function InsightsPage() {
             </div>
           )}
 
-          <div className="bg-white rounded-2xl border overflow-hidden">
-            <h3 className="text-sm font-semibold text-gray-700 p-4 border-b">Daily Averages ({days}d)</h3>
-            <ul className="divide-y">
+          <div className="card overflow-hidden">
+            <h3 className="text-sm font-bold text-gray-700 p-4 border-b border-black/[0.04]">Daily Averages ({days}d)</h3>
+            <ul className="divide-y divide-black/[0.04]">
               {Object.entries(NUTRIENT_LABELS).map(([key, label]) => {
                 const avg = averages.averages[key] || 0;
                 const target = targets?.targets ? (targets.targets as any)[key] : 0;
                 const pct = target > 0 ? (avg / target) * 100 : 0;
                 const isLow = averages.low_nutrients.includes(key);
                 return (
-                  <li key={key} className={`px-4 py-2.5 ${isLow ? "bg-amber-50" : ""}`}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className={`font-medium ${isLow ? "text-amber-700" : "text-gray-700"}`}>{label}</span>
-                      <span className="text-gray-500">
+                  <li key={key} className={`px-4 py-3 ${isLow ? "" : ""}`} style={isLow ? { background: "#fffbeb" } : {}}>
+                    <div className="flex justify-between text-sm mb-1.5">
+                      <span className="font-semibold" style={{ color: isLow ? "#b45309" : "#374151" }}>{label}</span>
+                      <span className="text-gray-400 text-xs">
                         {avg.toFixed(1)} / {target.toFixed(1)} {NUTRIENT_UNITS[key] || ""}
                       </span>
                     </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#f3f4f6" }}>
                       <div
-                        className={`h-full rounded-full transition-all ${
-                          pct >= 90 ? "bg-green-500" : pct >= 60 ? "bg-amber-400" : "bg-red-400"
-                        }`}
-                        style={{ width: `${Math.min(pct, 100)}%` }}
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${Math.min(pct, 100)}%`,
+                          background: pct >= 90 ? "#22c55e" : pct >= 60 ? "#f59e0b" : "#ef4444"
+                        }}
                       />
                     </div>
                   </li>
@@ -184,19 +184,25 @@ export default function InsightsPage() {
 
       {/* Tab: Top Foods */}
       {tab === "favorites" && (
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {favorites.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-8">No logged foods yet.</p>
+            <div className="card p-10 text-center">
+              <p className="text-2xl mb-2">🥗</p>
+              <p className="text-sm text-gray-400">No logged foods yet.</p>
+            </div>
           ) : (
             favorites.map((f, i) => (
-              <div key={f.food_id} className="flex items-center gap-3 bg-white rounded-xl border px-4 py-3">
-                <span className="text-lg font-bold text-gray-300 w-6 text-right">
+              <div key={f.food_id} className="card-hover flex items-center gap-3 px-4 py-3.5">
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center font-extrabold text-sm shrink-0"
+                  style={i === 0 ? { background: "#fef3c7", color: "#92400e" } : i === 1 ? { background: "#f3f4f6", color: "#6b7280" } : { background: "#fff7ed", color: "#c2410c" }}
+                >
                   {i + 1}
-                </span>
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-gray-800 truncate">{f.food_name}</div>
-                  <div className="text-xs text-gray-400">
-                    Logged {f.count} time{f.count !== 1 ? "s" : ""} · last: {f.last_logged}
+                  <div className="text-xs text-gray-400 mt-0.5">
+                    Logged {f.count}× · last: {f.last_logged}
                   </div>
                 </div>
               </div>
@@ -210,12 +216,14 @@ export default function InsightsPage() {
 
 /* ── Sub-components ─────────────────────────────────────────────────────────── */
 
-function StatCard({ label, value, icon }: { label: string; value: string; icon: string }) {
+function StatCard({ label, value, icon, bg, color }: { label: string; value: string; icon: string; bg: string; color: string }) {
   return (
-    <div className="bg-white rounded-xl border p-3 text-center">
-      <div className="text-lg mb-0.5">{icon}</div>
-      <div className="text-sm font-bold text-gray-800">{value}</div>
-      <div className="text-[10px] text-gray-500">{label}</div>
+    <div className="card p-3 text-center">
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg mx-auto mb-1" style={{ background: bg }}>
+        {icon}
+      </div>
+      <div className="text-base font-extrabold" style={{ color }}>{value}</div>
+      <div className="text-[10px] text-gray-400 font-medium mt-0.5">{label}</div>
     </div>
   );
 }
@@ -241,9 +249,9 @@ function TrendChart({
   const PAD = 20;
 
   return (
-    <div className="bg-white rounded-2xl border p-4">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-gray-700">{label}</h3>
+    <div className="card p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-bold text-gray-700">{label}</h3>
         {target && (
           <span className="text-xs text-gray-400">Target: {target.toFixed(1)} {unit}</span>
         )}

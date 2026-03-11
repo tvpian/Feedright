@@ -2,18 +2,128 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS Custom Properties ────────────────────────────────────────────────── */
+:root {
+  --radius-card:   1rem;
+  --radius-input:  0.75rem;
+  --shadow-card:   0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-modal:  0 8px 40px rgba(0,0,0,0.18);
+  --transition-ui: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
   }
+
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply antialiased text-gray-900;
+    background-color: #F7F6F2;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+
+  /* Suppress blue tap flash on iOS */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* Thin custom scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply rounded-full bg-gray-300; }
+
+  /* Number inputs — hide arrows */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* Smooth transitions on interactive elements */
+  button, a { transition: opacity var(--transition-ui), background-color var(--transition-ui), color var(--transition-ui), box-shadow var(--transition-ui); }
+}
+
+/* ── Component utilities ──────────────────────────────────────────────────── */
+@layer components {
+  /* Standard card */
+  .card {
+    @apply bg-white rounded-2xl;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Card with subtle hover lift */
+  .card-hover {
+    @apply card transition-shadow duration-200;
+    &:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.10), 0 8px 24px rgba(0,0,0,0.07); }
+  }
+
+  /* Pill badge */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  /* Primary action button */
+  .btn-primary {
+    @apply flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm text-white bg-brand-gradient transition-all duration-150;
+    &:hover:not(:disabled) { filter: brightness(1.06); box-shadow: 0 4px 14px rgba(12,143,74,0.35); }
+    &:active:not(:disabled) { filter: brightness(0.95); transform: scale(0.98); }
+    &:disabled { @apply opacity-50 cursor-not-allowed; }
+  }
+
+  /* Secondary ghost button */
+  .btn-ghost {
+    @apply flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-gray-700 bg-white border border-gray-200;
+    &:hover:not(:disabled) { @apply bg-gray-50 border-gray-300; }
+    &:disabled { @apply opacity-50; }
+  }
+
+  /* Text input */
+  .input {
+    @apply w-full px-3.5 py-2.5 rounded-xl text-sm border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-shadow duration-150;
+  }
+
+  /* Floating FAB */
+  .fab {
+    @apply fixed bottom-24 right-4 flex items-center gap-2 px-5 py-3.5 rounded-full font-semibold text-sm text-white z-40;
+    background: linear-gradient(135deg, #16b05e 0%, #0c8f4a 100%);
+    box-shadow: 0 4px 20px rgba(12,143,74,0.40), 0 1px 4px rgba(0,0,0,0.12);
+    &:hover { filter: brightness(1.05); box-shadow: 0 6px 24px rgba(12,143,74,0.50), 0 2px 8px rgba(0,0,0,0.14); }
+    &:active { transform: scale(0.97); }
   }
 }
 
+/* ── Utilities ──────────────────────────────────────────────────────────────  */
 @layer utilities {
+  /* Minimum tap target (44 × 44 px — WCAG 2.5.5) */
   .tap-target {
     min-height: 44px;
-    min-width: 44px;
+    min-width:  44px;
+  }
+
+  /* Safe-area bottom padding for notched phones */
+  .safe-b {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Text gradient */
+  .text-gradient-brand {
+    background: linear-gradient(135deg, #0c8f4a, #3acb7d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Frosted glass surface */
+  .glass {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+  }
+
+  /* Subtle section divider */
+  .divider {
+    @apply border-t border-black/[0.06];
+  }
+
+  /* Animate-in helper */
+  .animate-in {
+    @apply animate-fade-in;
   }
 }

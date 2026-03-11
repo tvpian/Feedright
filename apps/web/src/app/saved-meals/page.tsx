@@ -53,44 +53,50 @@ export default function SavedMealsPage() {
     <div className="max-w-xl mx-auto px-4 pt-6 pb-4 space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Saved Meals</h1>
-          <p className="text-sm text-gray-500">Quick-log your favourite bundles</p>
+          <h1 className="text-2xl font-extrabold tracking-tight">Saved Meals</h1>
+          <p className="text-sm text-gray-400">Quick-log your favourite bundles</p>
         </div>
-        <button onClick={load} className="tap-target flex items-center justify-center text-gray-400">
+        <button onClick={load} className="tap-target flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-100">
           <RefreshCw size={20} />
         </button>
       </div>
 
       {message && (
-        <div className="bg-brand-50 border border-brand-200 text-brand-700 rounded-xl px-4 py-2.5 text-sm font-medium">
+        <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ background: "#edfcf2", color: "#0a7140" }}>
           {message}
         </div>
       )}
 
       {meals.length === 0 ? (
-        <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-10 text-center text-gray-400 space-y-2">
-          <BookMarked size={32} className="mx-auto mb-2 text-gray-300" />
-          <p className="text-sm">No saved meals yet.</p>
-          <p className="text-xs">Save a meal from the log screen or create one below.</p>
+        <div className="card p-10 text-center space-y-2">
+          <BookMarked size={36} className="mx-auto mb-2 text-gray-200" />
+          <p className="text-sm font-semibold text-gray-400">No saved meals yet.</p>
+          <p className="text-xs text-gray-300">Save a meal from the log screen or create one below.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {meals.map((meal) => (
             <div
               key={meal.id}
-              className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden"
+              className="card overflow-hidden"
             >
               <div className="p-4 flex items-start gap-3">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: "#edfcf2" }}
+                >
+                  <BookMarked size={18} style={{ color: "#0a7140" }} />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-base">{meal.name}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="font-bold text-base">{meal.name}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
                     {meal.components.length} items
                     {meal.total_calories != null && ` · ${Math.round(meal.total_calories)} kcal`}
                   </p>
                   {meal.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
+                    <div className="flex flex-wrap gap-1 mt-2">
                       {meal.tags.map((t) => (
-                        <span key={t} className="text-[11px] px-2 py-0.5 bg-gray-100 rounded-full text-gray-600">
+                        <span key={t} className="text-[11px] px-2 py-0.5 rounded-xl font-semibold" style={{ background: "#f3f4f6", color: "#6b7280" }}>
                           {t}
                         </span>
                       ))}
@@ -98,20 +104,21 @@ export default function SavedMealsPage() {
                   )}
                 </div>
               </div>
-              <div className="border-t border-gray-100 px-4 py-2.5 flex gap-2">
+              <div className="border-t border-black/[0.04] px-4 py-3 flex gap-2">
                 <button
                   onClick={() => logMeal(meal.id)}
                   disabled={logging === meal.id}
-                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-colors"
+                  className="btn-primary flex-1 flex items-center justify-center gap-2 py-2.5 disabled:opacity-50"
                 >
-                  <Play size={14} /> {logging === meal.id ? "Logging…" : "Log to Today"}
+                  <Play size={13} /> {logging === meal.id ? "Logging…" : "Log to Today"}
                 </button>
                 <button
                   onClick={() => setConfirmId(meal.id)}
                   disabled={deleting === meal.id}
-                  className="py-2 px-3 border border-gray-200 text-red-400 hover:text-red-600 rounded-xl disabled:opacity-50"
+                  className="py-2.5 px-3.5 rounded-xl disabled:opacity-50 transition-all"
+                  style={{ background: "#fff1f2", color: "#be123c" }}
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={15} />
                 </button>
               </div>
             </div>
