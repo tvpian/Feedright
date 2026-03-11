@@ -21,7 +21,7 @@ export function LogFoodModal({
 }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FoodItem[]>([]);
-  const [searchMode, setSearchMode] = useState<"local" | "external">("local");
+  const [searchMode, setSearchMode] = useState<"local" | "external" | "create">("local");
   const [externalLoading, setExternalLoading] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [selected, setSelected] = useState<FoodItem | null>(preselectedFood ?? null);
@@ -34,6 +34,18 @@ export function LogFoodModal({
   const [whatIfLoading, setWhatIfLoading] = useState(false);
   const [showNoResults, setShowNoResults] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // Custom food creation form state
+  const [createName, setCreateName]       = useState("");
+  const [createCal, setCreateCal]         = useState("");
+  const [createProtein, setCreateProtein] = useState("");
+  const [createFat, setCreateFat]         = useState("");
+  const [createCarbs, setCreateCarbs]     = useState("");
+  const [createCategory, setCreateCategory] = useState("Other");
+  const [createServing, setCreateServing] = useState("100");
+  const [createUnit, setCreateUnit]       = useState("g");
+  const [creating, setCreating]           = useState(false);
+  const [createError, setCreateError]     = useState("");
 
   // Foods whose default_unit is not "g" can be logged by count (piece/cup/tbsp etc.)
   const hasAltUnit = selected && selected.default_unit !== "g";
@@ -64,6 +76,10 @@ export function LogFoodModal({
       }
       setSlot("Other");
       setError("");
+      // Reset create form
+      setCreateName(""); setCreateCal(""); setCreateProtein("");
+      setCreateFat(""); setCreateCarbs(""); setCreateCategory("Other");
+      setCreateServing("100"); setCreateUnit("g"); setCreateError("");
       setTimeout(() => searchRef.current?.focus(), 100);
     }
   }, [open, preselectedFood]);
@@ -72,6 +88,7 @@ export function LogFoodModal({
     // Always clear stale results + error hint immediately on any change
     setResults([]);
     setShowNoResults(false);
+    if (searchMode === "create") { setExternalLoading(false); return; }
     if (!query.trim()) { setExternalLoading(false); return; }
     // Show spinner right away in external mode — prevents the error hint
     // from flashing during the debounce window or between effect runs
@@ -157,6 +174,40 @@ export function LogFoodModal({
     }
   }
 
+  async function handleCreateFood(e: React.FormEvent) {
+    e.preventDefault();
+    if (!createName.trim()) { setCreateError("Name is required."); return; }
+    const cal   = parseFloat(createCal);
+    const prot  = parseFloat(createProtein);
+    const fat   = parseFloat(createFat);
+    const carbs = parseFloat(createCarbs);
+    const srv   = parseFloat(createServing);
+    if ([cal, prot, fat, carbs, srv].some(isNaN)) { setCreateError("Fill in all numeric fields."); return; }
+    setCreating(true);
+    setCreateError("");
+    try {
+      const created = await api.foods.create({
+        name: createName.trim(),
+        aliases: [],
+        category: createCategory,
+        default_serving_g: srv,
+        default_unit: createUnit,
+        tags: [],
+        nutrients_per_100g: { calories: cal, protein: prot, fat, carbs },
+        is_custom: true,
+      } as any);
+      // Auto-select the new food
+      setSelected(created);
+      setUnit(created.default_unit !== "g" ? created.default_unit : "g");
+      setAmount(String(created.default_serving_g));
+      setSearchMode("local"); // switch back so amount screen shows
+    } catch (err: any) {
+      setCreateError(err.message ?? "Failed to create food.");
+    } finally {
+      setCreating(false);
+    }
+  }
+
   if (!open) return null;
 
   return (
@@ -206,12 +257,20 @@ export function LogFoodModal({
                     }`}>
                     <Globe size={11} /> USDA Food DB
                   </button>
+                  <button type="button" onClick={() => setSearchMode("create")}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                      searchMode === "create" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500"
+                    }`}>
+                    + Create
+                  </button>
                 </div>
                 <button type="button" onClick={() => setShowScanner(true)}
                   className="p-2 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-600">
                   <ScanBarcode size={18} />
                 </button>
               </div>
+              {searchMode !== "create" && (
+              <>
               <div className="relative">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -262,6 +321,80 @@ export function LogFoodModal({
               )}
               {searchMode === "external" && !externalLoading && !query.trim() && (
                 <p className="mt-2 text-xs text-gray-400 text-center">Search 400 000+ USDA foods. Select one to import and log it.</p>
+              )}
+              </>
+              )}
+
+              {/* Create Food form */}
+              {searchMode === "create" && (
+                <form onSubmit={handleCreateFood} className="space-y-3 mt-1">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Food name *</label>
+                    <input
+                      type="text"
+                      value={createName}
+                      onChange={(e) => setCreateName(e.target.value)}
+                      placeholder="e.g. Homemade Pancake"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 -mb-1">Nutrients per 100g</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      ["Calories (kcal)", createCal,     setCreateCal],
+                      ["Protein (g)",     createProtein, setCreateProtein],
+                      ["Fat (g)",         createFat,     setCreateFat],
+                      ["Carbs (g)",       createCarbs,   setCreateCarbs],
+                    ] as [string, string, (v: string) => void][]).map(([label, val, setter]) => (
+                      <div key={label}>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          value={val}
+                          onChange={(e) => setter(e.target.value)}
+                          min={0}
+                          step="any"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Default serving (g)</label>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        value={createServing}
+                        onChange={(e) => setCreateServing(e.target.value)}
+                        min={1}
+                        step="any"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
+                      <select
+                        value={createCategory}
+                        onChange={(e) => setCreateCategory(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                      >
+                        {["Grain","Protein","Dairy","Vegetable","Fruit","Fat","Beverage","Other"].map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  {createError && <p className="text-xs text-red-600">{createError}</p>}
+                  <button
+                    type="submit"
+                    disabled={creating}
+                    className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl disabled:opacity-50 text-sm transition-colors"
+                  >
+                    {creating ? "Creating…" : "Create & Select Food"}
+                  </button>
+                </form>
               )}
             </div>
           )}

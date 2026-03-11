@@ -105,6 +105,7 @@ class LogEntryOut(BaseModel):
     food_name: Optional[str] = None
     food_default_serving_g: Optional[float] = None
     food_default_unit: Optional[str] = None
+    food_nutrients_per_100g: Optional[dict[str, float]] = None
 
     class Config:
         from_attributes = True
@@ -299,3 +300,26 @@ class CommonSupplementOut(BaseModel):
     key: str
     label: str
     daily_nutrients: dict[str, float]
+
+
+# ── Water Tracking ────────────────────────────────────────────────────────────
+
+class WaterEntryCreate(BaseModel):
+    amount_ml: float = Field(gt=0)
+
+
+class WaterEntryOut(BaseModel):
+    id: str
+    user_id: str
+    log_date: date
+    amount_ml: float
+
+    class Config:
+        from_attributes = True
+
+
+class WaterDaySummary(BaseModel):
+    date: date
+    total_ml: float
+    goal_ml: float
+    entries: list[WaterEntryOut]

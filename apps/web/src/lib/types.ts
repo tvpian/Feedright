@@ -133,6 +133,7 @@ export interface LogEntry {
   food_name?: string;
   food_default_serving_g?: number;
   food_default_unit?: string;
+  food_nutrients_per_100g?: { calories?: number; protein?: number; fat?: number; carbs?: number; [key: string]: number | undefined };
 }
 
 export interface LogEntryCreate {
@@ -414,6 +415,22 @@ export interface WeightEntryCreate {
   weight_kg: number;
   log_date?: string;
   notes?: string;
+}
+
+// ── Water Tracker ─────────────────────────────────────────────────────────────
+
+export interface WaterEntry {
+  id: string;
+  user_id: string;
+  log_date: string;
+  amount_ml: number;
+}
+
+export interface WaterDaySummary {
+  date: string;
+  total_ml: number;
+  goal_ml: number;
+  entries: WaterEntry[];
 }
 
 // ── What-If Preview ───────────────────────────────────────────────────────────

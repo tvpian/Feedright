@@ -107,6 +107,15 @@ class WeightEntryDB(Base):
     notes    = Column(String, default="")
 
 
+class WaterEntryDB(Base):
+    __tablename__ = "water_entries"
+
+    id         = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id    = Column(String, ForeignKey("users.id"), nullable=False)
+    log_date   = Column(Date, nullable=False, index=True)
+    amount_ml  = Column(Float, nullable=False)
+
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def create_tables() -> None:

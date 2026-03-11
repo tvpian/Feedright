@@ -136,6 +136,13 @@ def _get_entry_or_404(entry_id: str, user_id: str, log_date: date, db: Session) 
 
 def _row_to_out(row: LogEntryDB, db: Session) -> LogEntryOut:
     food = db.query(FoodDB).filter(FoodDB.id == row.food_id).first()
+    import json as _json
+    nutrients = None
+    if food:
+        try:
+            nutrients = _json.loads(food.nutrients_json)
+        except Exception:
+            pass
     return LogEntryOut(
         id=row.id,
         user_id=row.user_id,
@@ -149,6 +156,7 @@ def _row_to_out(row: LogEntryDB, db: Session) -> LogEntryOut:
         food_name=food.name if food else None,
         food_default_serving_g=food.default_serving_g if food else None,
         food_default_unit=food.default_unit if food else None,
+        food_nutrients_per_100g=nutrients,
     )
 
 

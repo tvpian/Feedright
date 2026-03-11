@@ -20,6 +20,7 @@ import type {
   StreakInfo,
   TrendResponse,
   UserProfile,
+  WaterDaySummary,
   WeeklyAverages,
   WeightEntry,
   WeightEntryCreate,
@@ -194,5 +195,18 @@ export const api = {
       }),
     commonSupplements: () =>
       _fetch<CommonSupplement[]>(`${BASE}/analytics/supplements/common`),
+  },
+
+  // ── Water Tracker ────────────────────────────────────────────────────────────
+  water: {
+    getDay: (userId: string, date: string) =>
+      _fetch<WaterDaySummary>(`${BASE}/water/${userId}/${date}`),
+    add: (userId: string, date: string, amount_ml: number) =>
+      _fetch<WaterDaySummary>(`${BASE}/water/${userId}/${date}`, {
+        method: "POST",
+        body: JSON.stringify({ amount_ml }),
+      }),
+    delete: (userId: string, date: string, entryId: string) =>
+      fetch(`${BASE}/water/${userId}/${date}/${entryId}`, { method: "DELETE" }),
   },
 };
