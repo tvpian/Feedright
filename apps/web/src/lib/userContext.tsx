@@ -34,11 +34,11 @@ const Ctx = createContext<UserCtx>({
 const STORAGE_KEY = "nutritrack_active_user_id";
 const UNLOCKED_KEY = "nutritrack_unlocked_profiles";
 
-// Active profile is kept in sessionStorage so every new tab/window starts
-// at the profile picker. Navigation within the same tab keeps the profile.
-const getSessionProfile = () => sessionStorage.getItem(STORAGE_KEY);
-const setSessionProfile = (id: string) => sessionStorage.setItem(STORAGE_KEY, id);
-const clearSessionProfile = () => sessionStorage.removeItem(STORAGE_KEY);
+// Active profile persists in localStorage so that tabs / browser restarts
+// keep the user logged in. PIN-unlock state stays in sessionStorage (security).
+const getSavedProfile = () => localStorage.getItem(STORAGE_KEY);
+const setSavedProfile = (id: string) => localStorage.setItem(STORAGE_KEY, id);
+const clearSavedProfile = () => localStorage.removeItem(STORAGE_KEY);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -69,12 +69,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       const list = await api.profiles.list();
       setProfiles(list);
 
-      // Only restore the active profile if we already have one in this session.
-      // A fresh tab always starts at profile = null (the picker screen).
-      const savedId = getSessionProfile();
+      // Restore the last-used profile so tabs / browser restarts stay logged in.
+      const savedId = getSavedProfile();
       const active = savedId ? (list.find((p) => p.id === savedId) ?? null) : null;
       setProfileState(active);
-      if (!active) clearSessionProfile();
+      if (!active) clearSavedProfile();
     } catch {
       /* API not yet available – silently ignore during SSR / cold start */
     } finally {
@@ -93,7 +92,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       setProfileState(p);
-      setSessionProfile(p.id);
+      setSavedProfile(p.id);
     },
     [unlockedIds],
   );
@@ -105,14 +104,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       sessionStorage.setItem(UNLOCKED_KEY, JSON.stringify([...next]));
       return next;
     });
-    clearSessionProfile();
+    clearSavedProfile();
     // Switch away if this was the active profile
     setProfileState((cur) => (cur?.id === id ? null : cur));
   }, []);
 
-  // Log out / switch profile — clears session without needing a PIN
+  // Log out / switch profile — clears saved profile without needing a PIN
   const switchProfile = useCallback(() => {
-    clearSessionProfile();
+    clearSavedProfile();
     setProfileState(null);
   }, []);
 
@@ -127,7 +126,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             if (res.ok) {
               addUnlocked(pendingProfile.id);
               setProfileState(pendingProfile);
-              setSessionProfile(pendingProfile.id);
+              setSavedProfile(pendingProfile.id);
               setPendingProfile(null);
               return true;
             }
