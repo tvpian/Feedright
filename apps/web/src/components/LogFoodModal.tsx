@@ -68,6 +68,9 @@ export function LogFoodModal({
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); setExternalLoading(false); return; }
+    // Show spinner immediately in external mode so the "not reachable" hint
+    // never fires during the debounce window
+    if (searchMode === "external") setExternalLoading(true);
     const controller = new AbortController();
     const t = setTimeout(async () => {
       try {
@@ -75,7 +78,6 @@ export function LogFoodModal({
           const res = await api.foods.search(query);
           if (!controller.signal.aborted) setResults(res);
         } else {
-          if (!controller.signal.aborted) setExternalLoading(true);
           const res = await api.foods.searchExternal(query, controller.signal);
           if (!controller.signal.aborted) { setResults(res); setExternalLoading(false); }
         }

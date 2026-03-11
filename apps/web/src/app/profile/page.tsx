@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@/lib/userContext";
 import { api } from "@/lib/api";
-import { User, ChevronRight, Settings, Scale, BookMarked, BarChart3, Lock, Unlock, KeySquare } from "lucide-react";
+import { User, ChevronRight, Settings, Scale, BookMarked, BarChart3, Lock, Unlock, KeySquare, LogOut } from "lucide-react";
 import { HEALTH_GOALS, HEALTH_CONDITIONS, NUTRIENT_LABELS, NUTRIENT_UNITS } from "@/lib/types";
 import type { DailyTargets } from "@/lib/types";
 
@@ -17,7 +17,7 @@ const ACTIVITY_LABELS: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { profile, profiles, setProfile, refreshProfiles, loading, lockProfile } = useUser();
+  const { profile, profiles, setProfile, refreshProfiles, loading, lockProfile, switchProfile } = useUser();
   const [targetsData, setTargetsData] = useState<DailyTargets | null>(null);
 
   // PIN management state
@@ -373,6 +373,15 @@ export default function ProfilePage() {
           >
             Add another profile
           </Link>
+
+          {/* Log out */}
+          <button
+            onClick={switchProfile}
+            className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 text-gray-500 font-medium rounded-2xl text-sm hover:bg-gray-50 transition-colors"
+          >
+            <LogOut size={16} />
+            Log out / Switch profile
+          </button>
         </>
       )}
     </div>

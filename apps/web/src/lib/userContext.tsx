@@ -18,6 +18,7 @@ interface UserCtx {
   refreshProfiles: () => Promise<void>;
   loading: boolean;
   lockProfile: (id: string) => void;
+  switchProfile: () => void;
 }
 
 const Ctx = createContext<UserCtx>({
@@ -27,6 +28,7 @@ const Ctx = createContext<UserCtx>({
   refreshProfiles: async () => {},
   loading: true,
   lockProfile: () => {},
+  switchProfile: () => {},
 });
 
 const STORAGE_KEY = "nutritrack_active_user_id";
@@ -108,8 +110,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setProfileState((cur) => (cur?.id === id ? null : cur));
   }, []);
 
+  // Log out / switch profile — clears session without needing a PIN
+  const switchProfile = useCallback(() => {
+    clearSessionProfile();
+    setProfileState(null);
+  }, []);
+
   return (
-    <Ctx.Provider value={{ profile, profiles, setProfile, refreshProfiles, loading, lockProfile }}>
+    <Ctx.Provider value={{ profile, profiles, setProfile, refreshProfiles, loading, lockProfile, switchProfile }}>
       {children}
       {pendingProfile && (
         <PinModal
