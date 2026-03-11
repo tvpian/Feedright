@@ -10,8 +10,12 @@ interface Props {
 
 export function BarcodeScanner({ onScan, onClose }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const onScanRef = useRef(onScan);
   const [error, setError]   = useState("");
   const [status, setStatus] = useState("Starting camera…");
+
+  // Keep the ref current so the decode callback always calls the latest onScan
+  useEffect(() => { onScanRef.current = onScan; }, [onScan]);
 
   useEffect(() => {
     let codeReader: any;
@@ -40,8 +44,8 @@ export function BarcodeScanner({ onScan, onClose }: Props) {
             if (stopped) return;
             if (result) {
               stopped = true;
-              codeReader.reset();
-              onScan(result.getText());
+              onScanRef.current(result.getText());
+              try { codeReader.reset(); } catch {}
             }
             // err fires every frame when no code is found — ignore it
           }
@@ -64,7 +68,8 @@ export function BarcodeScanner({ onScan, onClose }: Props) {
       stopped = true;
       try { codeReader?.reset(); } catch {}
     };
-  }, [onScan]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="fixed inset-0 z-[60] bg-black flex flex-col">
