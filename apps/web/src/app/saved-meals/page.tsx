@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { PlusCircle, Trash2, Play, RefreshCw, BookMarked } from "lucide-react";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import type { FoodItem, SavedMeal } from "@/lib/types";
 
 const today = format(new Date(), "yyyy-MM-dd");
@@ -17,6 +18,7 @@ export default function SavedMealsPage() {
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [message, setMessage] = useState("");
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -37,13 +39,14 @@ export default function SavedMealsPage() {
   }
 
   async function deleteMeal(mealId: string) {
-    if (!profile || !confirm("Delete this saved meal?")) return;
+    if (!profile) return;
     setDeleting(mealId);
     try {
       await api.savedMeals.delete(profile.id, mealId);
       setMeals((prev) => prev.filter((m) => m.id !== mealId));
     } catch {}
     setDeleting(null);
+    setConfirmId(null);
   }
 
   return (
@@ -104,7 +107,7 @@ export default function SavedMealsPage() {
                   <Play size={14} /> {logging === meal.id ? "Logging…" : "Log to Today"}
                 </button>
                 <button
-                  onClick={() => deleteMeal(meal.id)}
+                  onClick={() => setConfirmId(meal.id)}
                   disabled={deleting === meal.id}
                   className="py-2 px-3 border border-gray-200 text-red-400 hover:text-red-600 rounded-xl disabled:opacity-50"
                 >
@@ -115,6 +118,17 @@ export default function SavedMealsPage() {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        open={confirmId !== null}
+        title="Delete saved meal?"
+        message="This meal will be permanently removed. You can always recreate it later."
+        confirmLabel="Delete"
+        danger
+        onConfirm={() => confirmId && deleteMeal(confirmId)}
+        onCancel={() => setConfirmId(null)}
+      />
     </div>
   );
 }
+

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
 import { HEALTH_GOALS, HEALTH_CONDITIONS } from "@/lib/types";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import type { CommonSupplement } from "@/lib/types";
 
 const ACTIVITY = ["sedentary","light","moderate","active","very_active"];
@@ -18,6 +19,7 @@ export default function EditProfilePage() {
   const [form, setForm] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState("");
   const [commonSupps, setCommonSupps] = useState<CommonSupplement[]>([]);
 
@@ -180,22 +182,33 @@ export default function EditProfilePage() {
           <button
             type="button"
             disabled={deleting}
-            onClick={async () => {
-              if (!confirm("Delete this profile? All its log entries and data will be permanently removed.")) return;
-              setDeleting(true);
-              try {
-                await api.profiles.delete(id);
-                await refreshProfiles();
-                router.push("/");
-              } catch {
-                setError("Failed to delete profile.");
-                setDeleting(false);
-              }
-            }}
+            onClick={() => setShowDeleteConfirm(true)}
             className="w-full py-3 text-sm font-medium text-red-600 hover:bg-red-50 border border-red-200 rounded-2xl disabled:opacity-50 transition-colors">
             {deleting ? "Deleting\u2026" : "Delete this profile"}
           </button>
-        </div>      </form>
+        </div>
+      </form>
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete profile?"
+        message="All log entries, meal plans and data for this profile will be permanently removed. This cannot be undone."
+        confirmLabel="Delete forever"
+        danger
+        onConfirm={async () => {
+          setShowDeleteConfirm(false);
+          setDeleting(true);
+          try {
+            await api.profiles.delete(id);
+            await refreshProfiles();
+            router.push("/");
+          } catch {
+            setError("Failed to delete profile.");
+            setDeleting(false);
+          }
+        }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 }

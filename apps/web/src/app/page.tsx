@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { format, addDays, parseISO } from "date-fns";
-import { PlusCircle, RefreshCw, Copy, ChevronRight, AlertCircle, Scale, Zap, ChevronLeft } from "lucide-react";
+import { PlusCircle, RefreshCw, Copy, ChevronRight, AlertCircle, Scale, Zap, ChevronLeft, Lock } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
@@ -16,7 +16,7 @@ import { MacroRings } from "@/components/MacroRings";
 const todayStr = format(new Date(), "yyyy-MM-dd");
 
 export default function DashboardPage() {
-  const { profile, loading: userLoading } = useUser();
+  const { profile, profiles, loading: userLoading, setProfile } = useUser();
   const [date, setDate]     = useState(todayStr);
   const isToday             = date === todayStr;
   const [log, setLog] = useState<DailyLog | null>(null);
@@ -81,6 +81,41 @@ export default function DashboardPage() {
   }
 
   if (!profile) {
+    // Has profiles but none active (locked) → show picker
+    if (profiles.length > 0) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4">
+          <h1 className="text-2xl font-bold text-gray-900">Who's tracking today?</h1>
+          <p className="text-sm text-gray-500">Select a profile to continue</p>
+          <div className="w-full max-w-xs space-y-3 mt-2">
+            {profiles.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setProfile(p)}
+                className="w-full flex items-center gap-4 px-5 py-4 bg-white border border-gray-200 hover:border-brand-400 rounded-2xl shadow-sm hover:bg-brand-50 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-lg shrink-0">
+                  {p.name.charAt(0).toUpperCase()}
+                </div>
+                <span className="flex-1 text-left font-semibold text-gray-900">{p.name}</span>
+                {p.has_pin ? (
+                  <Lock size={16} className="text-violet-400 shrink-0" />
+                ) : (
+                  <ChevronRight size={16} className="text-gray-300 shrink-0" />
+                )}
+              </button>
+            ))}
+            <Link
+              href="/profile/new"
+              className="flex items-center justify-center gap-2 w-full py-3 border border-dashed border-gray-300 text-gray-500 font-semibold rounded-2xl text-sm hover:bg-gray-50"
+            >
+              + Add profile
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    // No profiles at all
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-4 text-center">
         <AlertCircle size={40} className="text-orange-400" />
@@ -155,6 +190,9 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+
+      {/* Content fades/dims while fetching new date data */}
+      <div className={`space-y-5 transition-opacity duration-200 ${fetching ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
 
       {/* Macro rings */}
       <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
@@ -314,6 +352,7 @@ export default function DashboardPage() {
           )}
         </div>
       )}
+      </div>{/* end fade wrapper */}
 
       {/* FAB + copy yesterday */}
       <div className="fixed bottom-20 right-4 flex flex-col gap-2 items-end z-40">

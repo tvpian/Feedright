@@ -74,13 +74,20 @@ export function LogFoodModal({
           setResults(await api.foods.search(query));
         } else {
           setExternalLoading(true);
-          setResults(await api.foods.searchExternal(query));
+          const res = await api.foods.searchExternal(query);
+          setResults(res);
           setExternalLoading(false);
         }
       } catch { setExternalLoading(false); }
     }, searchMode === "local" ? 250 : 600);
     return () => clearTimeout(t);
   }, [query, searchMode]);
+
+  // Clear results when switching search modes so stale local results don't show
+  useEffect(() => {
+    setResults([]);
+    setExternalLoading(false);
+  }, [searchMode]);
 
   // What-if preview: debounce fetch when food & amount are set
   useEffect(() => {
@@ -223,6 +230,13 @@ export function LogFoodModal({
                     </li>
                   ))}
                 </ul>
+              )}
+              {/* Show helpful hints for external mode */}
+              {searchMode === "external" && !externalLoading && query.trim() && results.length === 0 && (
+                <p className="mt-2 text-xs text-gray-400 text-center">No results found on Open Food Facts.</p>
+              )}
+              {searchMode === "external" && !query.trim() && (
+                <p className="mt-2 text-xs text-gray-400 text-center">Type to search millions of products. Select one to import and log it.</p>
               )}
             </div>
           )}

@@ -22,18 +22,10 @@ export function BarcodeScanner({ onScan, onClose }: Props) {
         const { BrowserMultiFormatReader } = await import("@zxing/browser");
         codeReader = new BrowserMultiFormatReader();
 
-        const devices = await BrowserMultiFormatReader.listVideoInputDevices();
-        if (!devices.length) { setError("No camera found on this device."); return; }
-
-        // Prefer back camera on mobile
-        const back = devices.find((d) =>
-          /back|rear|environment/i.test(d.label)
-        ) ?? devices[devices.length - 1];
-
-        setStatus("Point camera at a barcode…");
-
-        await codeReader.decodeFromVideoDevice(
-          back.deviceId,
+        // decodeFromConstraints requests camera permission automatically and
+        // works in both HTTP (localhost) and HTTPS contexts.
+        await codeReader.decodeFromConstraints(
+          { video: { facingMode: { ideal: "environment" } } },
           videoRef.current!,
           (result: any, err: any) => {
             if (stopped) return;
@@ -42,12 +34,19 @@ export function BarcodeScanner({ onScan, onClose }: Props) {
               codeReader.reset();
               onScan(result.getText());
             }
+            // err fires every frame when no code is found — ignore it
           }
         );
+        setStatus("Point camera at a barcode…");
       } catch (e: any) {
-        setError(e?.message?.includes("Permission")
-          ? "Camera permission denied. Allow camera access and try again."
-          : "Could not start camera: " + (e?.message ?? String(e)));
+        const msg = e?.message ?? String(e);
+        if (/permission|denied|not allowed/i.test(msg)) {
+          setError("Camera permission denied. Allow camera access and try again.");
+        } else if (/video input/i.test(msg) || /no.*device/i.test(msg)) {
+          setError("No camera found on this device.");
+        } else {
+          setError("Could not start camera: " + msg);
+        }
       }
     }
 
