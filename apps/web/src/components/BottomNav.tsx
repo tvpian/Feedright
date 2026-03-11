@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Home, PlusCircle, BarChart3, Lightbulb, User } from "lucide-react";
 import { clsx } from "clsx";
 import { format } from "date-fns";
+import { useUser } from "@/lib/userContext";
 
 const today = () => format(new Date(), "yyyy-MM-dd");
 
@@ -17,7 +18,10 @@ const NAV = [
 ];
 
 export function BottomNav() {
+  const { profile } = useUser();
   const path = usePathname();
+
+  if (!profile) return null;
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-b">
       <ul className="flex justify-around items-center h-16 px-2">

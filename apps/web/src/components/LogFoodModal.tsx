@@ -123,9 +123,9 @@ export function LogFoodModal({
     if (g <= 0) { setError("Enter a valid amount."); return; }
     setSaving(true);
     try {
-      // If this food came from OFF (id starts with off_) import it first
+      // If this food came from USDA FDC (id starts with fdc:) import it first
       let foodId = selected.id;
-      if (foodId.startsWith("off_")) {
+      if (foodId.startsWith("fdc:")) {
         const imported = await api.foods.importExternal(selected);
         foodId = imported.id;
       }
@@ -190,7 +190,7 @@ export function LogFoodModal({
                     className={`flex-1 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-center gap-1 transition-colors ${
                       searchMode === "external" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500"
                     }`}>
-                    <Globe size={11} /> Open Food Facts
+                    <Globe size={11} /> USDA Food DB
                   </button>
                 </div>
                 <button type="button" onClick={() => setShowScanner(true)}
@@ -243,11 +243,11 @@ export function LogFoodModal({
               {/* Show helpful hints for external mode */}
               {offUnavailable && (
                 <p className="mt-2 text-xs text-amber-600 text-center bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                  Open Food Facts could not be reached from this server. Add foods manually via “My Foods”.
+                  USDA Food Database could not be reached. Check your connection.
                 </p>
               )}
               {searchMode === "external" && !externalLoading && !query.trim() && (
-                <p className="mt-2 text-xs text-gray-400 text-center">Type to search millions of products. Select one to import and log it.</p>
+                <p className="mt-2 text-xs text-gray-400 text-center">Search 400 000+ USDA foods. Select one to import and log it.</p>
               )}
             </div>
           )}

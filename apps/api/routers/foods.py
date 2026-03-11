@@ -1,7 +1,8 @@
-"""Foods router — search, create custom foods, get by id, Open Food Facts import."""
+"""Foods router — search, create custom foods, get by id, USDA FoodData Central import."""
 from __future__ import annotations
 
 import json
+import os
 import uuid
 
 import httpx
@@ -15,62 +16,102 @@ from nutrition_core.constants import empty_nutrients
 
 router = APIRouter()
 
-# ── Open Food Facts helpers ───────────────────────────────────────────────────
+# ── USDA FoodData Central helpers ─────────────────────────────────────────────
+# Free API — DEMO_KEY: ~1 000 req/hr per IP.
+# Register a personal key at https://fdc.nal.usda.gov/api-key-signup.html and
+# set USDA_API_KEY env var to remove rate-limit concerns.
 
-_OFF_SEARCH = "https://world.openfoodfacts.org/cgi/search.pl"
-_OFF_PRODUCT = "https://world.openfoodfacts.org/api/v0/product/{barcode}.json"
-_OFF_FIELDS  = "code,product_name,product_name_en,nutriments,categories_tags,serving_size,image_small_url"
+_FDC_BASE    = "https://api.nal.usda.gov/fdc/v1"
+_FDC_API_KEY = os.getenv("USDA_API_KEY", "DEMO_KEY")
 
-def _off_nutrients(nm: dict) -> dict:
-    """Map Open Food Facts nutriments dict → our nutrients_per_100g dict."""
-    def g(key: str, factor: float = 1.0) -> float:
-        return round((nm.get(key) or 0) * factor, 3)
-    return {
-        "calories":      g("energy-kcal_100g"),
-        "protein":       g("proteins_100g"),
-        "carbs":         g("carbohydrates_100g"),
-        "fat":           g("fat_100g"),
-        "fiber":         g("fiber_100g"),
-        "sugar":         g("sugars_100g"),
-        "saturated_fat": g("saturated-fat_100g"),
-        "sodium":        g("sodium_100g", 1000),   # g → mg
-        "omega3":        g("omega-3-fat_100g"),
-        "caffeine":      g("caffeine_100g", 1000),  # g → mg
-        "iron":          g("iron_100g", 1000),
-        "calcium":       g("calcium_100g", 1000),
-        "potassium":     g("potassium_100g", 1000),
-        "magnesium":     g("magnesium_100g", 1000),
-        "zinc":          g("zinc_100g", 1000),
-        "vitamin_c":     g("vitamin-c_100g", 1000),
-        "vitamin_a":     g("vitamin-a_100g", 1000000),  # g → µg (RAE)
-        "vitamin_d":     g("vitamin-d_100g", 1000000),
-        "vitamin_e":     g("vitamin-e_100g", 1000),
-        "vitamin_b12":   g("vitamin-b12_100g", 1000000),
-        "folate":        g("folate_100g", 1000000),
-    }
+# USDA nutrient ID → (our_key, multiply_factor)
+# All values in the FDC search response are already per 100 g for
+# Foundation / SR Legacy / FNDDS.  Branded foods may be per serving —
+# we normalise those in _fdc_to_foodout().
+_NID_MAP: dict[int, tuple[str, float]] = {
+    1008: ("calories",      1.0),   # kcal
+    1003: ("protein",       1.0),   # g
+    1004: ("fat",           1.0),   # g
+    1005: ("carbs",         1.0),   # g
+    1079: ("fiber",         1.0),   # g
+    2000: ("sugar",         1.0),   # g  (total sugars)
+    1258: ("saturated_fat", 1.0),   # g
+    1093: ("sodium",        1.0),   # mg
+    1404: ("omega3",        1000.0),# g → mg (ALA)
+    1057: ("caffeine",      1.0),   # mg
+    1089: ("iron",          1.0),   # mg
+    1087: ("calcium",       1.0),   # mg
+    1092: ("potassium",     1.0),   # mg
+    1090: ("magnesium",     1.0),   # mg
+    1095: ("zinc",          1.0),   # mg
+    1101: ("selenium",      1.0),   # µg
+    1100: ("iodine",        1.0),   # µg
+    1107: ("choline",       1.0),   # mg
+    1106: ("vitamin_a",     1.0),   # µg RAE
+    1162: ("vitamin_c",     1.0),   # mg
+    1114: ("vitamin_d",     1.0),   # µg
+    1109: ("vitamin_e",     1.0),   # mg
+    1185: ("vitamin_k",     1.0),   # µg
+    1178: ("vitamin_b12",   1.0),   # µg
+    1173: ("vitamin_b1",    1.0),   # mg
+    1174: ("vitamin_b2",    1.0),   # mg
+    1175: ("vitamin_b3",    1.0),   # mg
+    1180: ("vitamin_b5",    1.0),   # mg
+    1166: ("vitamin_b6",    1.0),   # mg
+    1177: ("folate",        1.0),   # µg
+    1190: ("biotin",        1.0),   # µg
+}
 
-def _off_to_foodout(p: dict) -> FoodOut:
-    name = (p.get("product_name_en") or p.get("product_name") or "Unknown").strip()[:120]
-    code = str(p.get("code", ""))
-    nm   = p.get("nutriments") or {}
-    cats = p.get("categories_tags") or []
-    cat  = "other"
-    if any("dairy" in c or "milk" in c or "cheese" in c for c in cats): cat = "dairy"
-    elif any("meat" in c or "poultry" in c or "fish" in c or "seafood" in c for c in cats): cat = "protein"
-    elif any("vegetable" in c or "legume" in c for c in cats): cat = "vegetables"
-    elif any("fruit" in c for c in cats): cat = "fruits"
-    elif any("grain" in c or "cereal" in c or "bread" in c for c in cats): cat = "grains"
-    elif any("beverage" in c or "drink" in c for c in cats): cat = "beverages"
-    nutr = _off_nutrients(nm)
+_FDC_CAT_MAP = [
+    (["dairy", "egg", "milk", "cheese", "cream", "butter", "yogurt"], "dairy"),
+    (["poultry", "beef", "pork", "lamb", "veal", "fish", "shellfish",
+      "seafood", "meat", "game", "sausage", "bacon"],                 "protein"),
+    (["vegetable", "legume", "bean", "lentil", "tofu"],               "vegetables"),
+    (["fruit", "juice", "berry"],                                     "fruits"),
+    (["grain", "baked", "cereal", "bread", "pasta", "rice", "oat",
+      "flour", "cracker", "noodle"],                                  "grains"),
+    (["beverage", "drink", "coffee", "tea", "soda", "water"],         "beverages"),
+]
+
+def _fdc_category(raw: str) -> str:
+    s = (raw or "").lower()
+    for keywords, cat in _FDC_CAT_MAP:
+        if any(k in s for k in keywords):
+            return cat
+    return "other"
+
+def _fdc_to_foodout(item: dict, fdc_id: int) -> FoodOut:
+    """Map a USDA FDC food item → FoodOut (values normalised to per 100 g)."""
+    name = (item.get("description") or "Unknown").strip()[:120]
+    if name.isupper():
+        name = name.title()   # "CHEDDAR CHEESE" → "Cheddar Cheese"
+
+    serving_size = float(item.get("servingSize") or 100.0)
+    serving_unit = (item.get("servingSizeUnit") or "g").upper()
+    # Only normalise branded foods where servingSize is in grams and ≠ 100
+    normalize = (serving_unit == "G" and abs(serving_size - 100.0) > 0.5)
+
+    nuts = empty_nutrients()
+    for n in item.get("foodNutrients", []):
+        nid = n.get("nutrientId") or (n.get("nutrient") or {}).get("id")
+        val = float(n.get("value") or n.get("amount") or 0)
+        if nid in _NID_MAP:
+            key, factor = _NID_MAP[nid]
+            if normalize and serving_size > 0:
+                val = val * 100.0 / serving_size
+            nuts[key] = round(val * factor, 3)
+
+    cat_raw = item.get("foodCategory") or item.get("brandedFoodCategory") or ""
+    fdc_tag = f"fdc:{fdc_id}"
     return FoodOut(
-        id=f"off_{code}",   # temporary id — replaced on import
+        id=fdc_tag,
         name=name,
         aliases=[],
-        category=cat,
+        category=_fdc_category(cat_raw),
         default_serving_g=100.0,
         default_unit="g",
-        tags=[f"off:{code}"] if code else ["off:unknown"],
-        nutrients_per_100g=nutr,
+        tags=[fdc_tag],
+        nutrients_per_100g=nuts,
         is_custom=False,
     )
 
@@ -135,32 +176,37 @@ def create_custom_food(body: FoodCreate, db: Session = Depends(get_db)):
     return food_db_to_schema(row)
 
 
-# ── Open Food Facts endpoints ─────────────────────────────────────────────────
+# ── USDA FoodData Central endpoints ──────────────────────────────────────────
 
 @router.get("/external/search", response_model=list[FoodOut])
 async def search_external_foods(
     q: str = Query(..., min_length=2, description="Search term"),
     limit: int = Query(20, ge=1, le=40),
 ):
-    """Search Open Food Facts (no key required). Returns pre-mapped FoodOut objects."""
+    """Search USDA FoodData Central. Free — no registration required."""
     try:
-        async with httpx.AsyncClient(timeout=6.0) as client:
-            resp = await client.get(_OFF_SEARCH, params={
-                "search_terms": q, "action": "process", "json": "1",
-                "page_size": limit, "fields": _OFF_FIELDS, "sort_by": "unique_scans_n",
-            })
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            resp = await client.get(
+                f"{_FDC_BASE}/foods/search",
+                params={
+                    "query": q,
+                    "api_key": _FDC_API_KEY,
+                    "pageSize": limit,
+                    "dataType": "Foundation,SR Legacy,Survey (FNDDS),Branded",
+                },
+            )
     except Exception:
-        raise HTTPException(503, "Open Food Facts is not reachable from this server")
+        raise HTTPException(503, "USDA FoodData Central is not reachable")
     if resp.status_code != 200:
-        raise HTTPException(502, "Open Food Facts search failed")
-    products = resp.json().get("products") or []
+        raise HTTPException(502, f"USDA FDC error: {resp.status_code}")
+    foods = resp.json().get("foods") or []
     results = []
-    for p in products:
-        name = p.get("product_name_en") or p.get("product_name") or ""
-        if not name.strip():
+    for item in foods:
+        fdc_id = item.get("fdcId")
+        if not fdc_id:
             continue
         try:
-            results.append(_off_to_foodout(p))
+            results.append(_fdc_to_foodout(item, fdc_id))
         except Exception:
             continue
     return results[:limit]
@@ -168,40 +214,49 @@ async def search_external_foods(
 
 @router.get("/external/barcode/{barcode}", response_model=FoodOut)
 async def lookup_barcode(barcode: str, db: Session = Depends(get_db)):
-    """Look up a food by barcode via Open Food Facts. Auto-imports into DB if new."""
-    # Check cache first
-    tag = f"off:{barcode}"
-    existing = db.query(FoodDB).filter(FoodDB.tags.contains(tag)).first()
+    """Look up a food by GTIN/UPC barcode via USDA FDC. Auto-imports into DB."""
+    # Check local DB cache first
+    existing = db.query(FoodDB).filter(FoodDB.tags.contains(barcode)).first()
     if existing:
         return food_db_to_schema(existing)
 
     try:
-        async with httpx.AsyncClient(timeout=6.0) as client:
-            resp = await client.get(_OFF_PRODUCT.format(barcode=barcode))
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            resp = await client.get(
+                f"{_FDC_BASE}/foods/search",
+                params={
+                    "query": barcode,
+                    "api_key": _FDC_API_KEY,
+                    "pageSize": 1,
+                    "dataType": "Branded",
+                },
+            )
     except Exception:
-        raise HTTPException(503, "Open Food Facts is not reachable from this server")
-    if resp.status_code != 200:
-        raise HTTPException(404, f"Barcode {barcode} not found")
-    data = resp.json()
-    if data.get("status") != 1 or not data.get("product"):
-        raise HTTPException(404, f"Barcode {barcode} not found in Open Food Facts")
+        raise HTTPException(503, "USDA FoodData Central is not reachable")
 
-    food_out = _off_to_foodout({**data["product"], "code": barcode})
-    # Auto-import into DB so it can be logged
-    return _import_off_food(food_out, db)
+    foods = (resp.json().get("foods") or []) if resp.status_code == 200 else []
+    if not foods:
+        raise HTTPException(404, f"Barcode {barcode} not found in USDA FoodData Central")
+
+    item = foods[0]
+    fdc_id = item["fdcId"]
+    food_out = _fdc_to_foodout(item, fdc_id)
+    # Add barcode tag so subsequent lookups hit the cache
+    food_out.tags = list({*food_out.tags, f"barcode:{barcode}"})
+    return _import_fdc_food(food_out, db)
 
 
 @router.post("/external/import", response_model=FoodOut, status_code=201)
 def import_external_food(body: FoodOut, db: Session = Depends(get_db)):
-    """Save an Open Food Facts product to the local DB (idempotent by off: tag)."""
-    return _import_off_food(body, db)
+    """Save a USDA FDC food to the local DB (idempotent by fdc: tag)."""
+    return _import_fdc_food(body, db)
 
 
-def _import_off_food(food: FoodOut, db: Session) -> FoodOut:
-    """Upsert a food from OFF into the local DB, deduplicating by off:<code> tag."""
-    off_tags = [t for t in food.tags if t.startswith("off:")]
-    if off_tags:
-        existing = db.query(FoodDB).filter(FoodDB.tags.contains(off_tags[0])).first()
+def _import_fdc_food(food: FoodOut, db: Session) -> FoodOut:
+    """Upsert a food from USDA FDC into the local DB, deduplicating by fdc: tag."""
+    fdc_tags = [t for t in food.tags if t.startswith("fdc:")]
+    if fdc_tags:
+        existing = db.query(FoodDB).filter(FoodDB.tags.contains(fdc_tags[0])).first()
         if existing:
             return food_db_to_schema(existing)
 

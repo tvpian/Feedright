@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/lib/userContext";
 import { BottomNav } from "@/components/BottomNav";
+import { RouteGuard } from "@/components/RouteGuard";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,7 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <UserProvider>
           <div className="min-h-screen flex flex-col">
-            <main className="flex-1 pb-20">{children}</main>
+            <main className="flex-1 pb-20">
+              <RouteGuard>{children}</RouteGuard>
+            </main>
             <BottomNav />
           </div>
         </UserProvider>
