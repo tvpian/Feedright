@@ -143,11 +143,14 @@ async def search_external_foods(
     limit: int = Query(20, ge=1, le=40),
 ):
     """Search Open Food Facts (no key required). Returns pre-mapped FoodOut objects."""
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.get(_OFF_SEARCH, params={
-            "search_terms": q, "action": "process", "json": "1",
-            "page_size": limit, "fields": _OFF_FIELDS, "sort_by": "unique_scans_n",
-        })
+    try:
+        async with httpx.AsyncClient(timeout=6.0) as client:
+            resp = await client.get(_OFF_SEARCH, params={
+                "search_terms": q, "action": "process", "json": "1",
+                "page_size": limit, "fields": _OFF_FIELDS, "sort_by": "unique_scans_n",
+            })
+    except Exception:
+        raise HTTPException(503, "Open Food Facts is not reachable from this server")
     if resp.status_code != 200:
         raise HTTPException(502, "Open Food Facts search failed")
     products = resp.json().get("products") or []
@@ -172,8 +175,11 @@ async def lookup_barcode(barcode: str, db: Session = Depends(get_db)):
     if existing:
         return food_db_to_schema(existing)
 
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.get(_OFF_PRODUCT.format(barcode=barcode))
+    try:
+        async with httpx.AsyncClient(timeout=6.0) as client:
+            resp = await client.get(_OFF_PRODUCT.format(barcode=barcode))
+    except Exception:
+        raise HTTPException(503, "Open Food Facts is not reachable from this server")
     if resp.status_code != 200:
         raise HTTPException(404, f"Barcode {barcode} not found")
     data = resp.json()

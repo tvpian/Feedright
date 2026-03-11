@@ -67,20 +67,26 @@ export function LogFoodModal({
   }, [open, preselectedFood]);
 
   useEffect(() => {
-    if (!query.trim()) { setResults([]); return; }
+    if (!query.trim()) { setResults([]); setExternalLoading(false); return; }
+    let cancelled = false;
     const t = setTimeout(async () => {
       try {
         if (searchMode === "local") {
-          setResults(await api.foods.search(query));
+          const res = await api.foods.search(query);
+          if (!cancelled) setResults(res);
         } else {
-          setExternalLoading(true);
+          if (!cancelled) setExternalLoading(true);
           const res = await api.foods.searchExternal(query);
-          setResults(res);
-          setExternalLoading(false);
+          if (!cancelled) { setResults(res); setExternalLoading(false); }
         }
-      } catch { setExternalLoading(false); }
+      } catch {
+        if (!cancelled) {
+          setExternalLoading(false);
+          setResults([]);
+        }
+      }
     }, searchMode === "local" ? 250 : 600);
-    return () => clearTimeout(t);
+    return () => { cancelled = true; clearTimeout(t); setExternalLoading(false); };
   }, [query, searchMode]);
 
   // Clear results when switching search modes so stale local results don't show
@@ -88,6 +94,9 @@ export function LogFoodModal({
     setResults([]);
     setExternalLoading(false);
   }, [searchMode]);
+
+  // Hint for when OFF is not reachable
+  const offUnavailable = searchMode === "external" && !externalLoading && query.trim().length >= 2 && results.length === 0;
 
   // What-if preview: debounce fetch when food & amount are set
   useEffect(() => {
@@ -232,10 +241,12 @@ export function LogFoodModal({
                 </ul>
               )}
               {/* Show helpful hints for external mode */}
-              {searchMode === "external" && !externalLoading && query.trim() && results.length === 0 && (
-                <p className="mt-2 text-xs text-gray-400 text-center">No results found on Open Food Facts.</p>
+              {offUnavailable && (
+                <p className="mt-2 text-xs text-amber-600 text-center bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                  Open Food Facts could not be reached from this server. Add foods manually via “My Foods”.
+                </p>
               )}
-              {searchMode === "external" && !query.trim() && (
+              {searchMode === "external" && !externalLoading && !query.trim() && (
                 <p className="mt-2 text-xs text-gray-400 text-center">Type to search millions of products. Select one to import and log it.</p>
               )}
             </div>

@@ -5,7 +5,6 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import type { UserProfile } from "./types";
@@ -32,6 +31,12 @@ const Ctx = createContext<UserCtx>({
 
 const STORAGE_KEY = "nutritrack_active_user_id";
 const UNLOCKED_KEY = "nutritrack_unlocked_profiles";
+
+// Active profile is kept in sessionStorage so every new tab/window starts
+// at the profile picker. Navigation within the same tab keeps the profile.
+const getSessionProfile = () => sessionStorage.getItem(STORAGE_KEY);
+const setSessionProfile = (id: string) => sessionStorage.setItem(STORAGE_KEY, id);
+const clearSessionProfile = () => sessionStorage.removeItem(STORAGE_KEY);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -62,10 +67,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       const list = await api.profiles.list();
       setProfiles(list);
 
-      const savedId = localStorage.getItem(STORAGE_KEY);
-      const active = list.find((p) => p.id === savedId) ?? list[0] ?? null;
+      // Only restore the active profile if we already have one in this session.
+      // A fresh tab always starts at profile = null (the picker screen).
+      const savedId = getSessionProfile();
+      const active = savedId ? (list.find((p) => p.id === savedId) ?? null) : null;
       setProfileState(active);
-      if (!active) localStorage.removeItem(STORAGE_KEY);
+      if (!active) clearSessionProfile();
     } catch {
       /* API not yet available – silently ignore during SSR / cold start */
     } finally {
@@ -84,7 +91,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       setProfileState(p);
-      localStorage.setItem(STORAGE_KEY, p.id);
+      setSessionProfile(p.id);
     },
     [unlockedIds],
   );
@@ -96,6 +103,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       sessionStorage.setItem(UNLOCKED_KEY, JSON.stringify([...next]));
       return next;
     });
+    clearSessionProfile();
     // Switch away if this was the active profile
     setProfileState((cur) => (cur?.id === id ? null : cur));
   }, []);
@@ -111,7 +119,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             if (res.ok) {
               addUnlocked(pendingProfile.id);
               setProfileState(pendingProfile);
-              localStorage.setItem(STORAGE_KEY, pendingProfile.id);
+              setSessionProfile(pendingProfile.id);
               setPendingProfile(null);
               return true;
             }

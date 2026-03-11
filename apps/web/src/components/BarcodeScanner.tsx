@@ -18,6 +18,15 @@ export function BarcodeScanner({ onScan, onClose }: Props) {
     let stopped = false;
 
     async function start() {
+      // navigator.mediaDevices is only available in secure contexts (HTTPS / localhost)
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setError(
+          location.protocol === "https:" || location.hostname === "localhost"
+            ? "Camera access is not available on this device."
+            : "Camera requires HTTPS. Access the app via https:// or on localhost.",
+        );
+        return;
+      }
       try {
         const { BrowserMultiFormatReader } = await import("@zxing/browser");
         codeReader = new BrowserMultiFormatReader();
