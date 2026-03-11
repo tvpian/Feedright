@@ -236,6 +236,10 @@ class WeightEntryOut(BaseModel):
 class WhatIfRequest(BaseModel):
     food_id: str
     amount_g: float = Field(gt=0)
+    # Optional inline nutrients — used when the food hasn't been imported yet
+    # (e.g. USDA FDC foods selected but not yet saved to the local DB)
+    food_name: Optional[str] = None
+    nutrients_per_100g: Optional[dict[str, float]] = None
 
 
 class WhatIfGap(BaseModel):

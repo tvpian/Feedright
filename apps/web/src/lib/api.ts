@@ -179,10 +179,18 @@ export const api = {
       _fetch<WeeklyAverages>(`${BASE}/analytics/${userId}/averages?days=${days}`),
     favorites: (userId: string, limit = 10) =>
       _fetch<FavoriteFood[]>(`${BASE}/analytics/${userId}/favorites?limit=${limit}`),
-    whatIf: (userId: string, date: string, foodId: string, amountG: number) =>
+    whatIf: (
+      userId: string, date: string,
+      foodId: string, amountG: number,
+      inlineNutrients?: Record<string, number>, foodName?: string,
+    ) =>
       _fetch<WhatIfResponse>(`${BASE}/analytics/${userId}/${date}/what-if`, {
         method: "POST",
-        body: JSON.stringify({ food_id: foodId, amount_g: amountG }),
+        body: JSON.stringify({
+          food_id: foodId,
+          amount_g: amountG,
+          ...(inlineNutrients ? { nutrients_per_100g: inlineNutrients, food_name: foodName } : {}),
+        }),
       }),
     commonSupplements: () =>
       _fetch<CommonSupplement[]>(`${BASE}/analytics/supplements/common`),

@@ -107,7 +107,14 @@ export function LogFoodModal({
     setWhatIfLoading(true);
     const t = setTimeout(async () => {
       try {
-        const res = await api.analytics.whatIf(userId, date, selected.id, amountInGrams);
+        // FDC foods (not yet imported) need inline nutrients so the API
+        // can compute the preview without a local DB lookup
+        const isFdc = selected.id.startsWith("fdc:");
+        const res = await api.analytics.whatIf(
+          userId, date, selected.id, amountInGrams,
+          isFdc ? (selected.nutrients_per_100g as unknown as Record<string, number>) : undefined,
+          isFdc ? selected.name : undefined,
+        );
         setWhatIf(res);
       } catch {
         setWhatIf(null);
@@ -207,7 +214,7 @@ export function LogFoodModal({
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder={searchMode === "local" ? "Search foods…" : "Search Open Food Facts…"}
+                  placeholder={searchMode === "local" ? "Search my foods…" : "Search USDA Food DB…"}
                   className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
                 {externalLoading && (

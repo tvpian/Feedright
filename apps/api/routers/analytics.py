@@ -188,10 +188,18 @@ def what_if_preview(
     _assert_user(user_id, db)
 
     food_row = db.query(FoodDB).filter(FoodDB.id == body.food_id).first()
-    if not food_row:
-        raise HTTPException(404, f"Food {body.food_id} not found")
 
-    food = food_db_to_domain(food_row)
+    # For USDA FDC foods not yet imported, accept inline nutrients as fallback
+    if not food_row:
+        if not body.nutrients_per_100g:
+            raise HTTPException(404, f"Food {body.food_id} not found")
+        # Build a lightweight nutrient mapping from the provided dict
+        inline_nutrients = body.nutrients_per_100g
+        inline_name = body.food_name or body.food_id
+    else:
+        food = food_db_to_domain(food_row)
+        inline_nutrients = food.nutrients_per_100g
+        inline_name = food_row.name
 
     # Get targets
     from ..routers.targets import _row_to_profile
@@ -203,7 +211,7 @@ def what_if_preview(
 
     # Compute what the food would add
     factor = body.amount_g / 100.0
-    food_nutrients = {k: v * factor for k, v in food.nutrients_per_100g.items()}
+    food_nutrients = {k: v * factor for k, v in inline_nutrients.items()}
 
     # Projected totals
     projected_totals = {k: current_totals.get(k, 0) + food_nutrients.get(k, 0) for k in targets}
@@ -229,7 +237,7 @@ def what_if_preview(
     # Sort: limit-nutrient warnings first, then biggest improvements
     gaps.sort(key=lambda g: (0 if g.is_limit else 1, -g.delta_pct))
 
-    return WhatIfResponse(food_name=food_row.name, calories_added=round(calories_added, 1), gaps=gaps[:15])
+    return WhatIfResponse(food_name=inline_name, calories_added=round(calories_added, 1), gaps=gaps[:15])
 
 
 # ── Common Supplements Reference ─────────────────────────────────────────────
