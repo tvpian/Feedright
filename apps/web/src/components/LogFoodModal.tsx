@@ -68,25 +68,27 @@ export function LogFoodModal({
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); setExternalLoading(false); return; }
-    let cancelled = false;
+    const controller = new AbortController();
     const t = setTimeout(async () => {
       try {
         if (searchMode === "local") {
           const res = await api.foods.search(query);
-          if (!cancelled) setResults(res);
+          if (!controller.signal.aborted) setResults(res);
         } else {
-          if (!cancelled) setExternalLoading(true);
-          const res = await api.foods.searchExternal(query);
-          if (!cancelled) { setResults(res); setExternalLoading(false); }
+          if (!controller.signal.aborted) setExternalLoading(true);
+          const res = await api.foods.searchExternal(query, controller.signal);
+          if (!controller.signal.aborted) { setResults(res); setExternalLoading(false); }
         }
-      } catch {
-        if (!cancelled) {
+      } catch (err) {
+        // AbortError = intentional cancellation (user kept typing); stay silent
+        if ((err as Error).name === "AbortError") return;
+        if (!controller.signal.aborted) {
           setExternalLoading(false);
           setResults([]);
         }
       }
     }, searchMode === "local" ? 250 : 600);
-    return () => { cancelled = true; clearTimeout(t); setExternalLoading(false); };
+    return () => { controller.abort(); clearTimeout(t); setExternalLoading(false); };
   }, [query, searchMode]);
 
   // Clear results when switching search modes so stale local results don't show

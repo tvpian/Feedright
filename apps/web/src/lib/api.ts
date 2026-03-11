@@ -87,8 +87,8 @@ export const api = {
     get: (id: string) => _fetch<FoodItem>(`${BASE}/foods/${id}`),
     create: (data: Omit<FoodItem, "id" | "is_custom">) =>
       _fetch<FoodItem>(`${BASE}/foods`, { method: "POST", body: JSON.stringify(data) }),
-    searchExternal: (q: string) =>
-      _fetch<FoodItem[]>(`${BASE}/foods/external/search?q=${encodeURIComponent(q)}`),
+    searchExternal: (q: string, signal?: AbortSignal) =>
+      _fetch<FoodItem[]>(`${BASE}/foods/external/search?q=${encodeURIComponent(q)}`, { signal }),
     lookupBarcode: (barcode: string) =>
       _fetch<FoodItem>(`${BASE}/foods/external/barcode/${barcode}`),
     importExternal: (food: FoodItem) =>
