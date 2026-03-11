@@ -36,11 +36,11 @@ services:
     build:
       context: apps/web
       dockerfile: Dockerfile
+      args:
+        # Baked into the Next.js build — rewrites /api/* to the API container.
+        NEXT_PUBLIC_API_URL: http://api:8000
     restart: unless-stopped
     environment:
-      # Used by next.config.mjs rewrites (server-side only).
-      # The browser always calls relative /api/* paths; Next.js proxies them
-      # to this URL, which resolves inside the Docker network.
       NEXT_PUBLIC_API_URL: http://api:8000
     ports:
       - "3000:3000"
