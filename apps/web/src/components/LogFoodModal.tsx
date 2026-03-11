@@ -32,6 +32,7 @@ export function LogFoodModal({
   const [error, setError] = useState("");
   const [whatIf, setWhatIf] = useState<WhatIfResponse | null>(null);
   const [whatIfLoading, setWhatIfLoading] = useState(false);
+  const [showNoResults, setShowNoResults] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   // Foods whose default_unit is not "g" can be logged by count (piece/cup/tbsp etc.)
@@ -51,6 +52,7 @@ export function LogFoodModal({
     if (open) {
       setQuery("");
       setResults([]);
+      setShowNoResults(false);
       setSelected(preselectedFood ?? null);
       const food = preselectedFood ?? null;
       if (food && food.default_unit !== "g") {
@@ -67,9 +69,12 @@ export function LogFoodModal({
   }, [open, preselectedFood]);
 
   useEffect(() => {
-    if (!query.trim()) { setResults([]); setExternalLoading(false); return; }
-    // Show spinner immediately in external mode so the "not reachable" hint
-    // never fires during the debounce window
+    // Always clear stale results + error hint immediately on any change
+    setResults([]);
+    setShowNoResults(false);
+    if (!query.trim()) { setExternalLoading(false); return; }
+    // Show spinner right away in external mode — prevents the error hint
+    // from flashing during the debounce window or between effect runs
     if (searchMode === "external") setExternalLoading(true);
     const controller = new AbortController();
     const t = setTimeout(async () => {
@@ -79,28 +84,26 @@ export function LogFoodModal({
           if (!controller.signal.aborted) setResults(res);
         } else {
           const res = await api.foods.searchExternal(query, controller.signal);
-          if (!controller.signal.aborted) { setResults(res); setExternalLoading(false); }
+          if (!controller.signal.aborted) {
+            setResults(res);
+            setExternalLoading(false);
+            // Only show "not reachable" hint after a real empty response
+            if (res.length === 0) setShowNoResults(true);
+          }
         }
       } catch (err) {
-        // AbortError = intentional cancellation (user kept typing); stay silent
         if ((err as Error).name === "AbortError") return;
         if (!controller.signal.aborted) {
           setExternalLoading(false);
-          setResults([]);
+          setShowNoResults(true);
         }
       }
     }, searchMode === "local" ? 250 : 600);
     return () => { controller.abort(); clearTimeout(t); setExternalLoading(false); };
   }, [query, searchMode]);
 
-  // Clear results when switching search modes so stale local results don't show
-  useEffect(() => {
-    setResults([]);
-    setExternalLoading(false);
-  }, [searchMode]);
-
-  // Hint for when OFF is not reachable
-  const offUnavailable = searchMode === "external" && !externalLoading && query.trim().length >= 2 && results.length === 0;
+  // Hint for when USDA search returned nothing or failed
+  const offUnavailable = searchMode === "external" && showNoResults && query.trim().length >= 2;
 
   // What-if preview: debounce fetch when food & amount are set
   useEffect(() => {
