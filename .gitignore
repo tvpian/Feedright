@@ -63,3 +63,4 @@ htmlcov/
 
 # pyright
 pyrightconfig.json
+.env.production
