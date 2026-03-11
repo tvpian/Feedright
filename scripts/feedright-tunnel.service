@@ -1,0 +1,16 @@
+[Unit]
+Description=FeedRight — Cloudflare Quick Tunnel
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/cloudflared tunnel --url http://localhost:3000
+Restart=always
+RestartSec=10
+StandardOutput=append:/tmp/feedright-tunnel.log
+StandardError=append:/tmp/feedright-tunnel.log
+
+[Install]
+WantedBy=multi-user.target
