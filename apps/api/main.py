@@ -3,7 +3,18 @@ NutriTrack API — FastAPI application entry point.
 """
 from __future__ import annotations
 
+import pathlib, sys
+
+# Ensure the monorepo's local packages (nutrition_core, etc.) are importable
+# regardless of how uvicorn is invoked — no manual PYTHONPATH required.
+_PACKAGES = pathlib.Path(__file__).resolve().parents[2] / "packages"
+if str(_PACKAGES) not in sys.path:
+    sys.path.insert(0, str(_PACKAGES))
+
 from contextlib import asynccontextmanager
+
+from dotenv import load_dotenv
+load_dotenv()  # load .env from project root before any os.getenv() calls
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
