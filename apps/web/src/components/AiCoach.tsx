@@ -8,8 +8,8 @@ interface Props {
   date: string;
 }
 
-// Call FastAPI directly to guarantee streaming works (bypasses Next.js rewrite buffering)
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Use the same relative /api path as all other API calls.
+// Next.js rewrites proxy this to the FastAPI backend, which preserves streaming.
 
 const QUICK_QUESTIONS = [
   "What should I eat to hit my goals today?",
@@ -70,7 +70,7 @@ export function AiCoach({ userId, date }: Props) {
       const params = new URLSearchParams({ date });
       if (q) params.set("question", q);
 
-      const res = await fetch(`${API_BASE}/api/advisor/${userId}/coach?${params}`, {
+      const res = await fetch(`/api/advisor/${userId}/coach?${params}`, {
         method: "POST",
         signal: ctrl.signal,
       });
