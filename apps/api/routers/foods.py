@@ -73,6 +73,29 @@ _FDC_CAT_MAP = [
     (["beverage", "drink", "coffee", "tea", "soda", "water"],         "beverages"),
 ]
 
+import re as _re
+
+def _clean_household_unit(text: str) -> str:
+    """Turn USDA householdServingFullText into a friendly unit label.
+
+    Examples:
+      '1 CHICKEN BREAST' → 'chicken breast'
+      '5.5 ONZ'          → 'serving'
+      '1 SLICE'          → 'slice'
+      '2 TBSP'           → 'tbsp'
+    """
+    t = text.strip()
+    # Strip leading number (e.g. '1 ', '5.5 ')
+    t = _re.sub(r'^[\d.,/]+\s*', '', t).strip()
+    if not t:
+        return "serving"
+    # Common USDA abbreviations that aren't useful as labels
+    ignore = {"ONZ", "OZA", "OZ", "GRM", "GM", "G", "ML", "MLT"}
+    if t.upper() in ignore:
+        return "serving"
+    # Common useful abbreviations → lowercase
+    return t.lower()[:30]
+
 def _fdc_category(raw: str) -> str:
     s = (raw or "").lower()
     for keywords, cat in _FDC_CAT_MAP:
@@ -103,13 +126,31 @@ def _fdc_to_foodout(item: dict, fdc_id: int) -> FoodOut:
 
     cat_raw = item.get("foodCategory") or item.get("brandedFoodCategory") or ""
     fdc_tag = f"fdc:{fdc_id}"
+
+    # Extract serving size from USDA data
+    raw_serving = float(item.get("servingSize") or 0)
+    raw_unit = (item.get("servingSizeUnit") or "g").upper()
+    household = (item.get("householdServingFullText") or "").strip()
+
+    # Determine default serving and unit label
+    if raw_serving > 0 and raw_unit == "G" and household:
+        # Clean up household text: "1 CHICKEN BREAST" → "serving"
+        unit_label = _clean_household_unit(household)
+        srv_g = raw_serving
+    elif raw_serving > 0 and raw_unit == "G":
+        srv_g = raw_serving
+        unit_label = "serving"
+    else:
+        srv_g = 100.0
+        unit_label = "g"
+
     return FoodOut(
         id=fdc_tag,
         name=name,
         aliases=[],
         category=_fdc_category(cat_raw),
-        default_serving_g=100.0,
-        default_unit="g",
+        default_serving_g=srv_g,
+        default_unit=unit_label,
         tags=[fdc_tag],
         nutrients_per_100g=nuts,
         is_custom=False,

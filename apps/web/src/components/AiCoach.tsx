@@ -195,7 +195,7 @@ export function AiCoach({ userId, date }: Props) {
             <p className="text-sm font-semibold text-gray-900">AI Coach</p>
             <p className="text-[11px] text-gray-500">
               {loading
-                ? `Analysing your nutrition\u2026 ${elapsed > 0 ? `(${elapsed}s)` : ""}`
+                ? `Analysing your nutrition… ${elapsed > 0 ? `(${elapsed}s)` : ""}`
                 : response
                   ? open ? "Your personalised advice" : "Tap to read your advice"
                   : "Personalised advice for your goals"}
@@ -233,14 +233,14 @@ export function AiCoach({ userId, date }: Props) {
                       />
                     ))}
                     <span className="text-xs text-gray-500 ml-1 font-medium">
-                      Analysing your nutrition\u2026{elapsed > 0 && ` (${elapsed}s)`}
+                      Analysing your nutrition…{elapsed > 0 && ` (${elapsed}s)`}
                     </span>
                   </div>
                   <p className="text-[10px] text-gray-400 text-center">
                     {elapsed < 10
                       ? "Preparing your personalised advice"
                       : elapsed < 30
-                        ? "The AI model is thinking — this usually takes 30\u201360 seconds"
+                        ? "The AI model is thinking — this usually takes 30–60 seconds"
                         : "Almost there — generating your recommendations"}
                   </p>
                 </div>

@@ -229,16 +229,16 @@ export function LogFoodModal({
       />
     )}
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
-      <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] flex flex-col">
+      <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col" style={{ maxHeight: "min(92dvh, 92vh)" }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-black/[0.06]">
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-black/[0.06] shrink-0">
           <h2 className="text-lg font-extrabold">Log Food</h2>
           <button onClick={onClose} className="tap-target flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-100">
             <X size={20} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-4" style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
           {/* Search */}
           {!selected && (
             <div>
@@ -457,6 +457,35 @@ export function LogFoodModal({
                 </div>
               )}
 
+              {/* Quick-fill serving presets */}
+              {selected && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {/* Food's own default serving */}
+                  {selected.default_serving_g !== 100 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (hasAltUnit) { setUnit(altUnitLabel); setAmount("1"); }
+                        else { setUnit("g"); setAmount(String(selected.default_serving_g)); }
+                      }}
+                      className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-brand-50 text-brand-700 border border-brand-200 hover:bg-brand-100 transition-colors"
+                    >
+                      1 {hasAltUnit ? altUnitLabel : "serving"} ({Math.round(selected.default_serving_g)}g)
+                    </button>
+                  )}
+                  {[50, 100, 150, 200].map((g) => (
+                    <button
+                      type="button"
+                      key={g}
+                      onClick={() => { setUnit("g"); setAmount(String(g)); }}
+                      className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                    >
+                      {g}g
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <input
                 type="number"
                 inputMode="decimal"
@@ -551,10 +580,12 @@ export function LogFoodModal({
             <button
               type="submit"
               disabled={!selected || saving}
-              className="btn-primary w-full py-3.5 disabled:opacity-50"
+              className="btn-primary w-full py-3.5 disabled:opacity-50 mb-2"
             >
               {saving ? "Saving…" : "Add to Log"}
             </button>
+            {/* Extra padding for mobile so submit is visible above keyboard/nav */}
+            <div className="h-4 sm:h-0" />
           </form>
         </div>
       </div>

@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { Check, Copy, Droplets, PlusCircle, Trash2, RefreshCw, Pencil, X } from "lucide-react";
+import { Check, Copy, Droplets, PlusCircle, Trash2, RefreshCw, Pencil, X, BookMarked } from "lucide-react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
 import type { DailyLog, LogEntry, WaterDaySummary } from "@/lib/types";
 import { MEAL_SLOTS, formatEntryAmount } from "@/lib/types";
 import { LogFoodModal } from "@/components/LogFoodModal";
+import { ConfirmModal } from "@/components/ConfirmModal";
 
 // Preset water amounts in ml (glass sizes)
 const WATER_PRESETS = [150, 250, 330, 500];
@@ -20,6 +21,10 @@ export default function LogPage() {
   const [modal, setModal] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [copying, setCopying] = useState(false);
+  const [savingMeal, setSavingMeal] = useState(false);
+  const [mealNamePrompt, setMealNamePrompt] = useState(false);
+  const [mealName, setMealName] = useState("");
+  const [mealSaved, setMealSaved] = useState("");
 
   // Inline edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -68,6 +73,27 @@ export default function LogPage() {
       await load();
     } catch {}
     setCopying(false);
+  }
+
+  async function saveAsMeal() {
+    if (!profile || !log || log.entries.length === 0 || !mealName.trim()) return;
+    setSavingMeal(true);
+    try {
+      await api.savedMeals.create(profile.id, {
+        name: mealName.trim(),
+        tags: [],
+        components: log.entries.map((e) => ({
+          food_id: e.food_id,
+          amount_g: e.amount_g,
+          unit: e.unit ?? "g",
+        })),
+      });
+      setMealSaved(mealName.trim());
+      setMealNamePrompt(false);
+      setMealName("");
+      setTimeout(() => setMealSaved(""), 3000);
+    } catch {}
+    setSavingMeal(false);
   }
 
   function startEdit(entry: LogEntry) {
@@ -320,6 +346,54 @@ export default function LogPage() {
             </div>
           );
         })
+      )}
+
+      {/* Save as Meal button — when there are entries */}
+      {slotGroups.length > 0 && (
+        <>
+          {mealSaved && (
+            <div className="rounded-xl px-4 py-3 text-sm font-semibold" style={{ background: "#edfcf2", color: "#0a7140" }}>
+              &quot;{mealSaved}&quot; saved! Find it in Profile → Meals.
+            </div>
+          )}
+          <button
+            onClick={() => { setMealName(`${format(new Date(date + "T12:00:00"), "EEEE")} meal`); setMealNamePrompt(true); }}
+            className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-brand-600 bg-brand-50 border border-brand-200 rounded-xl hover:bg-brand-100 transition-colors"
+          >
+            <BookMarked size={15} /> Save today&apos;s log as a Meal
+          </button>
+        </>
+      )}
+
+      {/* Meal name prompt modal */}
+      {mealNamePrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
+          <div className="bg-white rounded-2xl shadow-xl w-[90%] max-w-sm p-5 space-y-4">
+            <h3 className="text-lg font-bold">Save as Meal</h3>
+            <p className="text-sm text-gray-500">Give this meal a name so you can quickly log it again later.</p>
+            <input
+              type="text"
+              value={mealName}
+              onChange={(e) => setMealName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") saveAsMeal(); }}
+              placeholder="e.g. My breakfast"
+              className="input w-full"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setMealNamePrompt(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={saveAsMeal}
+                disabled={savingMeal || !mealName.trim()}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold btn-primary disabled:opacity-50"
+              >
+                {savingMeal ? "Saving…" : "Save Meal"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* FAB */}
