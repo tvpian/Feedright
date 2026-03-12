@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { Sparkles, ChevronDown, ChevronUp, Send, RefreshCw } from "lucide-react";
 
 interface Props {
@@ -28,11 +28,24 @@ export function AiCoach({ userId, date }: Props) {
   );
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState("");
+  const [elapsed, setElapsed]     = useState(0);
   const abortRef     = useRef<AbortController | null>(null);
   const bufferRef    = useRef("");
   const flushRef     = useRef<ReturnType<typeof setInterval> | null>(null);
   const firstTokRef  = useRef(true);   // used to clear old response on first new token
   const responseRef  = useRef<HTMLDivElement | null>(null);
+  const timerRef     = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Elapsed-second counter while loading
+  useEffect(() => {
+    if (loading) {
+      setElapsed(0);
+      timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [loading]);
 
   /** Persist to sessionStorage every time response changes */
   function setResponse(text: string) {
@@ -70,10 +83,15 @@ export function AiCoach({ userId, date }: Props) {
       const params = new URLSearchParams({ date });
       if (q) params.set("question", q);
 
+      // Abort after 2 minutes to prevent infinite hang
+      const timeout = setTimeout(() => ctrl.abort(), 120_000);
+
       const res = await fetch(`/api/advisor/${userId}/coach?${params}`, {
         method: "POST",
         signal: ctrl.signal,
       });
+
+      clearTimeout(timeout);
 
       if (!res.ok) {
         const text = await res.text();
@@ -177,7 +195,7 @@ export function AiCoach({ userId, date }: Props) {
             <p className="text-sm font-semibold text-gray-900">AI Coach</p>
             <p className="text-[11px] text-gray-500">
               {loading
-                ? "Analysing your nutrition…"
+                ? `Analysing your nutrition\u2026 ${elapsed > 0 ? `(${elapsed}s)` : ""}`
                 : response
                   ? open ? "Your personalised advice" : "Tap to read your advice"
                   : "Personalised advice for your goals"}
@@ -204,16 +222,27 @@ export function AiCoach({ userId, date }: Props) {
                   )}
                 </>
               ) : (
-                /* Thinking dots */
-                <div className="flex items-center gap-1.5 py-1">
-                  {[0, 150, 300].map((delay) => (
-                    <span
-                      key={delay}
-                      className="w-1.5 h-1.5 bg-brand-400 rounded-full animate-bounce"
-                      style={{ animationDelay: `${delay}ms` }}
-                    />
-                  ))}
-                  <span className="text-xs text-gray-400 ml-1">Analysing your nutrition…</span>
+                /* Thinking dots + elapsed timer */
+                <div className="flex flex-col items-center gap-2 py-2">
+                  <div className="flex items-center gap-1.5">
+                    {[0, 150, 300].map((delay) => (
+                      <span
+                        key={delay}
+                        className="w-1.5 h-1.5 bg-brand-400 rounded-full animate-bounce"
+                        style={{ animationDelay: `${delay}ms` }}
+                      />
+                    ))}
+                    <span className="text-xs text-gray-500 ml-1 font-medium">
+                      Analysing your nutrition\u2026{elapsed > 0 && ` (${elapsed}s)`}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 text-center">
+                    {elapsed < 10
+                      ? "Preparing your personalised advice"
+                      : elapsed < 30
+                        ? "The AI model is thinking — this usually takes 30\u201360 seconds"
+                        : "Almost there — generating your recommendations"}
+                  </p>
                 </div>
               )}
             </div>

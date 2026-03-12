@@ -176,7 +176,7 @@ async def coach_stream(
                             {"role": "user",   "content": user_msg},
                         ],
                         "stream": True,
-                        "keep_alive": "10m",
+                        "keep_alive": "2h",
                         "options": {"temperature": 0.35, "top_p": 0.9, "num_predict": 350},
                     },
                 ) as resp:
