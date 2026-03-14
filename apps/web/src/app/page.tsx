@@ -385,7 +385,11 @@ export default function DashboardPage() {
         </button>
         <button
           onClick={() => setLogModal(true)}
-          className="fab"
+          className="flex items-center gap-2 px-5 py-3.5 rounded-full font-semibold text-sm text-white"
+          style={{
+            background: "linear-gradient(135deg, #16b05e 0%, #0c8f4a 100%)",
+            boxShadow: "0 4px 20px rgba(12,143,74,0.40), 0 1px 4px rgba(0,0,0,0.12)",
+          }}
         >
           <PlusCircle size={18} /> Log Food
         </button>

@@ -228,8 +228,8 @@ export function LogFoodModal({
         }}
       />
     )}
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
-      <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col" style={{ maxHeight: "min(92dvh, 92vh)" }}>
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
+      <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col" style={{ maxHeight: "min(85dvh, 85vh)" }}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-black/[0.06] shrink-0">
           <h2 className="text-lg font-extrabold">Log Food</h2>
@@ -580,7 +580,7 @@ export function LogFoodModal({
         </div>
 
         {/* Sticky submit footer — always visible at bottom of modal */}
-        <div className="shrink-0 px-4 pb-4 pt-2 border-t border-black/[0.06] bg-white rounded-b-3xl safe-b">
+        <div className="shrink-0 px-4 pt-2 border-t border-black/[0.06] bg-white rounded-b-3xl" style={{ paddingBottom: "max(env(safe-area-inset-bottom, 16px), 16px)" }}>
           <button
             type="button"
             onClick={() => handleSubmit()}
