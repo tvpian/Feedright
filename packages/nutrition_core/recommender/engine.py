@@ -218,20 +218,45 @@ def _make_explanation(food_names: list[str], contribs: list[NutrientContribution
 
 # ── Filtering helpers ──────────────────────────────────────────────────────────
 
+# Tags that indicate animal-flesh foods
+_MEAT_TAGS = frozenset({"meat", "poultry", "fish", "seafood"})
+# Tags that indicate any animal-derived product
+_ANIMAL_TAGS = frozenset({"meat", "poultry", "fish", "seafood", "dairy", "egg"})
+# Categories that are inherently non-vegetarian (fallback when tags are sparse)
+_NON_VEG_CATEGORIES = frozenset({"protein"})  # protein category = meat/fish/eggs
+
+
 def _is_allowed(food: FoodItem, request: RecommendationRequest) -> bool:
     if food.id in request.avoid_ids:
         return False
     for tag in request.avoid_tags:
         if tag in food.tags:
             return False
+
+    tags = set(food.tags)
+
     for constraint in request.constraints:
-        # e.g. "vegetarian" means skip foods tagged "meat" or "poultry"
-        if constraint == "vegetarian" and any(t in food.tags for t in ("meat", "poultry")):
-            return False
-        if constraint == "no-cook" and "needs-cooking" in food.tags:
-            return False
-        if constraint == "vegan" and any(t in food.tags for t in ("meat", "poultry", "dairy", "egg", "fish")):
-            return False
+        if constraint == "vegetarian":
+            # Exclude anything tagged as animal flesh
+            if tags & _MEAT_TAGS:
+                return False
+            # Fallback: if food has no semantic tags (e.g. USDA import with only
+            # fdc:xxx), use category as a proxy — "protein" category foods that
+            # aren't explicitly tagged as egg/dairy are likely meat/fish.
+            if food.category == "protein" and not (tags & {"egg", "dairy", "legume", "vegan", "vegetarian"}):
+                return False
+
+        elif constraint == "no-cook":
+            if "needs-cooking" in tags:
+                return False
+
+        elif constraint == "vegan":
+            if tags & _ANIMAL_TAGS:
+                return False
+            # Fallback for untagged USDA foods
+            if food.category in ("protein", "dairy") and not (tags & {"legume", "vegan"}):
+                return False
+
     return True
 
 

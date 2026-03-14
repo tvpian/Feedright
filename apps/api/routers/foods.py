@@ -103,6 +103,45 @@ def _fdc_category(raw: str) -> str:
             return cat
     return "other"
 
+
+def _infer_tags_from_category(cat_raw: str, category: str) -> list[str]:
+    """Infer semantic tags from the USDA category string so constraint filters work.
+
+    E.g. a food in USDA category "Poultry Products" gets tagged ["meat", "poultry",
+    "needs-cooking"] so the vegetarian filter can exclude it.
+    """
+    s = (cat_raw or "").lower()
+    tags: list[str] = []
+
+    # Meat / poultry
+    if any(k in s for k in ("beef", "pork", "lamb", "veal", "game", "sausage", "bacon", "meat")):
+        tags += ["meat", "needs-cooking"]
+    if any(k in s for k in ("poultry", "chicken", "turkey", "duck")):
+        tags += ["meat", "poultry", "needs-cooking"]
+
+    # Fish / seafood
+    if any(k in s for k in ("fish", "shellfish", "seafood", "finfish")):
+        tags += ["fish", "needs-cooking"]
+
+    # Dairy
+    if any(k in s for k in ("dairy", "milk", "cheese", "cream", "yogurt", "butter")):
+        tags += ["dairy", "no-cook"]
+
+    # Egg
+    if "egg" in s:
+        tags += ["egg"]
+
+    # Grains / baked goods
+    if category == "grains":
+        if any(k in s for k in ("bread", "cracker")):
+            tags += ["no-cook"]
+
+    # Fruits / veggies are inherently vegan
+    if category in ("fruits", "vegetables"):
+        tags += ["vegan"]
+
+    return list(set(tags))  # deduplicate
+
 def _fdc_to_foodout(item: dict, fdc_id: int) -> FoodOut:
     """Map a USDA FDC food item → FoodOut (values normalised to per 100 g)."""
     name = (item.get("description") or "Unknown").strip()[:120]
@@ -126,6 +165,10 @@ def _fdc_to_foodout(item: dict, fdc_id: int) -> FoodOut:
 
     cat_raw = item.get("foodCategory") or item.get("brandedFoodCategory") or ""
     fdc_tag = f"fdc:{fdc_id}"
+    category = _fdc_category(cat_raw)
+
+    # Infer semantic tags from USDA category keywords so constraint filters work
+    inferred_tags = _infer_tags_from_category(cat_raw, category)
 
     # Extract serving size from USDA data
     raw_serving = float(item.get("servingSize") or 0)
@@ -148,10 +191,10 @@ def _fdc_to_foodout(item: dict, fdc_id: int) -> FoodOut:
         id=fdc_tag,
         name=name,
         aliases=[],
-        category=_fdc_category(cat_raw),
+        category=category,
         default_serving_g=srv_g,
         default_unit=unit_label,
-        tags=[fdc_tag],
+        tags=[fdc_tag] + inferred_tags,
         nutrients_per_100g=nuts,
         is_custom=False,
     )
