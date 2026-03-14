@@ -7,6 +7,8 @@ import type { TrendResponse, StreakInfo, WeeklyAverages, FavoriteFood, DailyTarg
 import { NUTRIENT_LABELS, NUTRIENT_UNITS } from "@/lib/types";
 import { NutrientTrendChart } from "@/components/NutrientTrendChart";
 
+import { Download } from "lucide-react";
+
 type Tab = "trends" | "averages" | "favorites";
 
 export default function InsightsPage() {
@@ -52,8 +54,28 @@ export default function InsightsPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 pt-6 pb-10">
-      <h1 className="text-2xl font-extrabold tracking-tight mb-0.5">Insights</h1>
-      <p className="text-gray-400 text-sm mb-5">Your nutrition analytics &amp; patterns</p>
+      <div className="flex items-start justify-between mb-0.5">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">Insights</h1>
+          <p className="text-gray-400 text-sm mb-5">Your nutrition analytics &amp; patterns</p>
+        </div>
+        <div className="flex gap-1.5">
+          <a
+            href={`/api/analytics/${profile.id}/export?fmt=csv&days=${days}`}
+            download
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border border-gray-200 text-gray-500 hover:text-brand-600 hover:border-brand-300 transition-colors"
+          >
+            <Download size={13} /> CSV
+          </a>
+          <a
+            href={`/api/analytics/${profile.id}/export?fmt=json&days=${days}`}
+            download
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold border border-gray-200 text-gray-500 hover:text-brand-600 hover:border-brand-300 transition-colors"
+          >
+            <Download size={13} /> JSON
+          </a>
+        </div>
+      </div>
 
       {/* Streaks Card */}
       {streaks && (

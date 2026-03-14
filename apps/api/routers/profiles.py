@@ -132,4 +132,5 @@ def _to_out(row: UserDB) -> ProfileOut:
         health_conditions=json.loads(row.health_conditions or "[]"),
         supplements=[SupplementIn(**s) for s in supps_raw],
         has_pin=bool(row.pin_hash),
+        water_goal_ml=row.water_goal_ml,
     )

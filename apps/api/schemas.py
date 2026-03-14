@@ -28,6 +28,7 @@ class ProfileCreate(BaseModel):
     health_goals: list[str] = []
     health_conditions: list[str] = []
     supplements: list[SupplementIn] = []
+    water_goal_ml: Optional[float] = None  # Custom daily water target
 
 
 class ProfileOut(ProfileCreate):
@@ -51,6 +52,7 @@ class ProfileUpdate(BaseModel):
     health_goals: Optional[list[str]] = None
     health_conditions: Optional[list[str]] = None
     supplements: Optional[list[SupplementIn]] = None
+    water_goal_ml: Optional[float] = None
 
 
 # ── Foods ─────────────────────────────────────────────────────────────────────

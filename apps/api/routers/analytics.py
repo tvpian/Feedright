@@ -1,11 +1,14 @@
-"""Analytics router — trends, streaks, favorites, what-if preview."""
+"""Analytics router — trends, streaks, favorites, what-if preview, data export."""
 from __future__ import annotations
 
+import csv
+import io
 import json
 from collections import Counter, defaultdict
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -257,6 +260,80 @@ def _assert_user(user_id: str, db: Session):
     user = db.query(UserDB).filter(UserDB.id == user_id, UserDB.is_active == True).first()
     if not user:
         raise HTTPException(404, f"User {user_id} not found")
+
+
+# ── Data Export ────────────────────────────────────────────────────────────────
+
+@router.get("/{user_id}/export")
+def export_data(
+    user_id: str,
+    fmt: str = Query(default="csv", regex="^(csv|json)$"),
+    days: int = Query(default=30, ge=1, le=365),
+    db: Session = Depends(get_db),
+):
+    """Export food log data as CSV or JSON."""
+    _assert_user(user_id, db)
+    today = date.today()
+    start = today - timedelta(days=days - 1)
+
+    rows = (
+        db.query(LogEntryDB)
+        .filter(
+            LogEntryDB.user_id == user_id,
+            LogEntryDB.log_date >= start,
+            LogEntryDB.log_date <= today,
+        )
+        .order_by(LogEntryDB.log_date, LogEntryDB.meal_slot)
+        .all()
+    )
+
+    # Resolve food names
+    food_names: dict[str, str] = {}
+    for r in rows:
+        if r.food_id not in food_names:
+            food = db.query(FoodDB).filter(FoodDB.id == r.food_id).first()
+            food_names[r.food_id] = food.name if food else "Unknown"
+
+    if fmt == "json":
+        data = [
+            {
+                "date": str(r.log_date),
+                "meal_slot": r.meal_slot,
+                "food": food_names.get(r.food_id, "Unknown"),
+                "amount_g": r.amount_g,
+                "unit": r.unit,
+                "notes": r.notes or "",
+            }
+            for r in rows
+        ]
+        return StreamingResponse(
+            io.BytesIO(json.dumps(data, indent=2).encode()),
+            media_type="application/json",
+            headers={"Content-Disposition": f"attachment; filename=feedright-export-{days}d.json"},
+        )
+
+    # CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Date", "Meal Slot", "Food", "Amount (g)", "Unit", "Notes"])
+    for r in rows:
+        writer.writerow([
+            str(r.log_date),
+            r.meal_slot,
+            food_names.get(r.food_id, "Unknown"),
+            r.amount_g,
+            r.unit,
+            r.notes or "",
+        ])
+    output.seek(0)
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode()),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=feedright-export-{days}d.csv"},
+    )
+
+
+# ── helpers ───────────────────────────────────────────────────────────────────
 
 
 def _day_totals(user_id: str, log_date: date, db: Session) -> dict[str, float]:

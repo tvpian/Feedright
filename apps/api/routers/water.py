@@ -10,12 +10,20 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from ..database import WaterEntryDB, get_db
+from ..database import UserDB, WaterEntryDB, get_db
 from ..schemas import WaterDaySummary, WaterEntryCreate, WaterEntryOut
 
 router = APIRouter()
 
 _DEFAULT_GOAL_ML = 2500.0
+
+
+def _user_water_goal(user_id: str, db: Session) -> float:
+    """Return user's configured water goal, or the default."""
+    user = db.query(UserDB).filter(UserDB.id == user_id).first()
+    if user and user.water_goal_ml:
+        return user.water_goal_ml
+    return _DEFAULT_GOAL_ML
 
 
 @router.get("/{user_id}/{log_date}", response_model=WaterDaySummary)
@@ -28,10 +36,11 @@ def get_water_day(user_id: str, log_date: date, db: Session = Depends(get_db)):
         .all()
     )
     total = sum(r.amount_ml for r in rows)
+    goal = _user_water_goal(user_id, db)
     return WaterDaySummary(
         date=log_date,
         total_ml=total,
-        goal_ml=_DEFAULT_GOAL_ML,
+        goal_ml=goal,
         entries=[WaterEntryOut.model_validate(r) for r in rows],
     )
 

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { format } from "date-fns";
-import { PlusCircle, Trash2, Play, RefreshCw, BookMarked } from "lucide-react";
+import { PlusCircle, Trash2, Play, RefreshCw, BookMarked, Pencil, Check, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
 import { ConfirmModal } from "@/components/ConfirmModal";
@@ -19,6 +19,8 @@ export default function SavedMealsPage() {
   const [newName, setNewName] = useState("");
   const [message, setMessage] = useState("");
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -47,6 +49,19 @@ export default function SavedMealsPage() {
     } catch {}
     setDeleting(null);
     setConfirmId(null);
+  }
+
+  async function renameMeal(meal: SavedMeal) {
+    if (!profile || !editName.trim()) { setEditingId(null); return; }
+    try {
+      const updated = await api.savedMeals.update(profile.id, meal.id, {
+        name: editName.trim(),
+        tags: meal.tags,
+        components: meal.components,
+      });
+      setMeals((prev) => prev.map((m) => m.id === meal.id ? updated : m));
+    } catch {}
+    setEditingId(null);
   }
 
   return (
@@ -88,7 +103,39 @@ export default function SavedMealsPage() {
                   <BookMarked size={18} style={{ color: "#0a7140" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-base">{meal.name}</p>
+                  {editingId === meal.id ? (
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") renameMeal(meal);
+                          if (e.key === "Escape") setEditingId(null);
+                        }}
+                        className="flex-1 px-2.5 py-1 text-sm border border-brand-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        autoFocus
+                      />
+                      <button onClick={() => renameMeal(meal)}
+                        className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-600 text-white">
+                        <Check size={13} />
+                      </button>
+                      <button onClick={() => setEditingId(null)}
+                        className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-500">
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-bold text-base">{meal.name}</p>
+                      <button
+                        onClick={() => { setEditingId(meal.id); setEditName(meal.name); }}
+                        className="text-gray-300 hover:text-brand-500 transition-colors"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                    </div>
+                  )}
                   <p className="text-xs text-gray-400 mt-0.5">
                     {meal.components.length} items
                     {meal.total_calories != null && ` · ${Math.round(meal.total_calories)} kcal`}

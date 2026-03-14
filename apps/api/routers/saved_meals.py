@@ -43,6 +43,18 @@ def delete_saved_meal(user_id: str, meal_id: str, db: Session = Depends(get_db))
     db.commit()
 
 
+@router.patch("/{user_id}/{meal_id}", response_model=SavedMealOut)
+def update_saved_meal(user_id: str, meal_id: str, body: SavedMealCreate, db: Session = Depends(get_db)):
+    """Update name, tags, and/or components of a saved meal."""
+    row = _get_or_404(meal_id, user_id, db)
+    row.name = body.name
+    row.tags = json.dumps(body.tags)
+    row.components_json = json.dumps([c.model_dump() for c in body.components])
+    db.commit()
+    db.refresh(row)
+    return _to_out(row, db)
+
+
 @router.post("/{user_id}/{meal_id}/log/{log_date}", response_model=list[LogEntryOut])
 def log_saved_meal(user_id: str, meal_id: str, log_date, db: Session = Depends(get_db)):
     """Add all components of a saved meal as individual log entries for a date."""

@@ -62,6 +62,7 @@ export interface UserProfile {
   health_conditions: string[];
   supplements: SupplementInput[];
   has_pin?: boolean;
+  water_goal_ml?: number | null;  // Custom daily water target in ml
 }
 
 export interface ProfileCreate extends Omit<UserProfile, "id"> {}

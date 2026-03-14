@@ -158,6 +158,23 @@ export default function EditProfilePage() {
           )}
         </div>
 
+        {/* Water Goal */}
+        <div className="space-y-1">
+          <label className="block text-sm font-medium">Daily Water Goal (ml)</label>
+          <p className="text-xs text-gray-400 mb-1">Leave empty for default (2500 ml)</p>
+          <input
+            type="number"
+            inputMode="numeric"
+            value={form.water_goal_ml ?? ""}
+            onChange={(e) => set("water_goal_ml", e.target.value ? Number(e.target.value) : null)}
+            placeholder="2500"
+            className={INPUT}
+            min={500}
+            max={10000}
+            step={100}
+          />
+        </div>
+
         {/* Dietary Preferences */}
         <div className="space-y-1">
           <label className="block text-sm font-medium">Dietary Preferences</label>

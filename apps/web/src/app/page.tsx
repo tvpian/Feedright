@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { format, addDays, parseISO } from "date-fns";
-import { PlusCircle, RefreshCw, Copy, ChevronRight, AlertCircle, Scale, Zap, ChevronLeft, Lock } from "lucide-react";
+import { PlusCircle, RefreshCw, Copy, ChevronRight, AlertCircle, Scale, Zap, ChevronLeft, Lock, Calendar } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
@@ -25,6 +25,8 @@ export default function DashboardPage() {
   const [fetching, setFetching] = useState(false);
   const [copyingYesterday, setCopyingYesterday] = useState(false);
   const [copyToast, setCopyToast] = useState("");
+  const [showCopyPicker, setShowCopyPicker] = useState(false);
+  const [copySourceDate, setCopySourceDate] = useState("");
   const [showAllNutrients, setShowAllNutrients] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteFood[]>([]);
   const [streaks, setStreaks] = useState<StreakInfo | null>(null);
@@ -63,16 +65,18 @@ export default function DashboardPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  async function copyYesterday() {
+  async function copyYesterday(sourceDate?: string) {
     if (!profile) return;
     setCopyingYesterday(true);
     try {
-      await api.logs.copyYesterday(profile.id, date);
+      await api.logs.copyYesterday(profile.id, date, sourceDate);
       await load();
-      setCopyToast("Yesterday's food entries copied!");
+      const label = sourceDate ? format(parseISO(sourceDate), "MMM d") : "Yesterday";
+      setCopyToast(`Entries from ${label} copied!`);
       setTimeout(() => setCopyToast(""), 3000);
     } catch {}
     setCopyingYesterday(false);
+    setShowCopyPicker(false);
   }
 
   if (userLoading) {
@@ -385,15 +389,25 @@ export default function DashboardPage() {
 
       {/* FAB + copy yesterday */}
       <div className="fixed bottom-24 right-4 flex flex-col gap-2 items-end z-40">
-        <button
-          onClick={copyYesterday}
-          disabled={copyingYesterday}
-          title="Duplicate all food entries from yesterday into this day"
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold text-gray-600 transition-all"
-          style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", boxShadow: "0 2px 12px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)" }}
-        >
-          <Copy size={13} /> {copyingYesterday ? "Copying…" : "Repeat yesterday"}
-        </button>
+        <div className="flex gap-1.5">
+          <button
+            onClick={() => { setCopySourceDate(""); setShowCopyPicker(true); }}
+            title="Copy from a specific past date"
+            className="flex items-center justify-center w-8 h-8 rounded-full text-gray-500 transition-all"
+            style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", boxShadow: "0 2px 12px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)" }}
+          >
+            <Calendar size={13} />
+          </button>
+          <button
+            onClick={() => copyYesterday()}
+            disabled={copyingYesterday}
+            title="Duplicate all food entries from yesterday into this day"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold text-gray-600 transition-all"
+            style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", boxShadow: "0 2px 12px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)" }}
+          >
+            <Copy size={13} /> {copyingYesterday ? "Copying…" : "Repeat yesterday"}
+          </button>
+        </div>
         <button
           onClick={() => setLogModal(true)}
           className="flex items-center gap-2 px-5 py-3.5 rounded-full font-semibold text-sm text-white"
@@ -405,6 +419,36 @@ export default function DashboardPage() {
           <PlusCircle size={18} /> Log Food
         </button>
       </div>
+
+      {/* Copy from date picker modal */}
+      {showCopyPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
+          <div className="bg-white rounded-2xl shadow-xl w-[90%] max-w-sm p-5 space-y-4">
+            <h3 className="text-lg font-bold">Copy from date</h3>
+            <p className="text-sm text-gray-500">Select a date to copy all food entries from that day into {format(parseISO(date), "MMM d")}.</p>
+            <input
+              type="date"
+              value={copySourceDate}
+              onChange={(e) => setCopySourceDate(e.target.value)}
+              max={date}
+              className="input w-full"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setShowCopyPicker(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={() => copyYesterday(copySourceDate)}
+                disabled={copyingYesterday || !copySourceDate}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold btn-primary disabled:opacity-50"
+              >
+                {copyingYesterday ? "Copying…" : "Copy"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <LogFoodModal
         userId={profile.id}

@@ -112,8 +112,8 @@ export const api = {
       }),
     deleteEntry: (userId: string, date: string, entryId: string) =>
       fetch(`${BASE}/logs/${userId}/${date}/${entryId}`, { method: "DELETE" }),
-    copyYesterday: (userId: string, date: string) =>
-      _fetch<DailyLog>(`${BASE}/logs/${userId}/${date}/copy-yesterday`, {
+    copyYesterday: (userId: string, date: string, sourceDate?: string) =>
+      _fetch<DailyLog>(`${BASE}/logs/${userId}/${date}/copy-yesterday${sourceDate ? `?source_date=${sourceDate}` : ""}`, {
         method: "POST",
       }),
   },
@@ -136,6 +136,15 @@ export const api = {
       }),
     delete: (userId: string, mealId: string) =>
       fetch(`${BASE}/saved-meals/${userId}/${mealId}`, { method: "DELETE" }),
+    update: (
+      userId: string,
+      mealId: string,
+      data: { name: string; tags: string[]; components: { food_id: string; amount_g: number; unit: string }[] }
+    ) =>
+      _fetch<SavedMeal>(`${BASE}/saved-meals/${userId}/${mealId}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
     log: (userId: string, mealId: string, date: string) =>
       _fetch<LogEntry[]>(`${BASE}/saved-meals/${userId}/${mealId}/log/${date}`, {
         method: "POST",

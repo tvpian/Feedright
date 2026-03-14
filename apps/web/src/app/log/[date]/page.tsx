@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { format, addDays, parseISO } from "date-fns";
-import { Check, Copy, Droplets, PlusCircle, Trash2, RefreshCw, Pencil, X, BookMarked, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, Copy, Droplets, PlusCircle, Trash2, RefreshCw, Pencil, X, BookMarked, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
@@ -30,6 +30,8 @@ export default function LogPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [copying, setCopying] = useState(false);
   const [copyToast, setCopyToast] = useState("");
+  const [showCopyPicker, setShowCopyPicker] = useState(false);
+  const [copySourceDate, setCopySourceDate] = useState("");
   const [savingMeal, setSavingMeal] = useState(false);
   const [mealNamePrompt, setMealNamePrompt] = useState(false);
   const [mealName, setMealName] = useState("");
@@ -77,16 +79,18 @@ export default function LogPage() {
     setDeleting(null);
   }
 
-  async function copyYesterday() {
+  async function copyFromDay(sourceDate?: string) {
     if (!profile) return;
     setCopying(true);
     try {
-      await api.logs.copyYesterday(profile.id, date);
+      await api.logs.copyYesterday(profile.id, date, sourceDate);
       await load();
-      setCopyToast("Yesterday's entries copied to this day!");
+      const label = sourceDate ? format(parseISO(sourceDate), "MMM d") : "Yesterday";
+      setCopyToast(`Entries from ${label} copied!`);
       setTimeout(() => setCopyToast(""), 3000);
     } catch {}
     setCopying(false);
+    setShowCopyPicker(false);
   }
 
   async function saveAsMeal() {
@@ -208,12 +212,19 @@ export default function LogPage() {
             <ChevronRight size={20} />
           </button>
           <button
-            onClick={copyYesterday}
+            onClick={() => copyFromDay()}
             disabled={copying}
             title="Copy all food entries from yesterday into this day"
             className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-brand-600 disabled:opacity-40 transition-colors"
           >
             {copying ? <RefreshCw size={18} className="animate-spin" /> : <Copy size={18} />}
+          </button>
+          <button
+            onClick={() => { setCopySourceDate(""); setShowCopyPicker(true); }}
+            title="Copy from a specific date"
+            className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-brand-600 transition-colors"
+          >
+            <Calendar size={18} />
           </button>
           <button onClick={load} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors">
             <RefreshCw size={18} />
@@ -505,6 +516,36 @@ export default function LogPage() {
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold btn-primary disabled:opacity-50"
               >
                 {savingMeal ? "Saving…" : "Save Meal"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Copy from date picker modal */}
+      {showCopyPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
+          <div className="bg-white rounded-2xl shadow-xl w-[90%] max-w-sm p-5 space-y-4">
+            <h3 className="text-lg font-bold">Copy from date</h3>
+            <p className="text-sm text-gray-500">Select a date to copy all food entries from that day into {format(parseISO(date), "MMM d")}.</p>
+            <input
+              type="date"
+              value={copySourceDate}
+              onChange={(e) => setCopySourceDate(e.target.value)}
+              max={date}
+              className="input w-full"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setShowCopyPicker(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={() => copyFromDay(copySourceDate)}
+                disabled={copying || !copySourceDate}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold btn-primary disabled:opacity-50"
+              >
+                {copying ? "Copying…" : "Copy"}
               </button>
             </div>
           </div>

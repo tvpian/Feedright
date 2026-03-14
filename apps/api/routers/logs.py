@@ -87,14 +87,15 @@ def delete_log_entry(
 
 
 @router.post("/{user_id}/{log_date}/copy-yesterday", response_model=DailyLogOut)
-def copy_from_yesterday(user_id: str, log_date: date, db: Session = Depends(get_db)):
-    """Duplicate all entries from the previous day into log_date."""
+def copy_from_yesterday(user_id: str, log_date: date, source_date: date | None = None, db: Session = Depends(get_db)):
+    """Duplicate all entries from a source day into log_date.
+    If source_date is not provided, defaults to the previous day."""
     from datetime import timedelta
     _require_user(user_id, db)
-    yesterday = log_date - timedelta(days=1)
+    src = source_date if source_date else log_date - timedelta(days=1)
     prev_rows = (
         db.query(LogEntryDB)
-        .filter(LogEntryDB.user_id == user_id, LogEntryDB.log_date == yesterday)
+        .filter(LogEntryDB.user_id == user_id, LogEntryDB.log_date == src)
         .all()
     )
     for r in prev_rows:
