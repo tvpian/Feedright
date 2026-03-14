@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { format } from "date-fns";
-import { Check, Copy, Droplets, PlusCircle, Trash2, RefreshCw, Pencil, X, BookMarked } from "lucide-react";
-import { useParams } from "next/navigation";
+import { format, addDays, parseISO } from "date-fns";
+import { Check, Copy, Droplets, PlusCircle, Trash2, RefreshCw, Pencil, X, BookMarked, ChevronLeft, ChevronRight } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
 import type { DailyLog, LogEntry, WaterDaySummary } from "@/lib/types";
@@ -21,11 +21,15 @@ const WATER_PRESETS = [
 
 export default function LogPage() {
   const { date } = useParams<{ date: string }>();
+  const router = useRouter();
   const { profile } = useUser();
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const isToday = date === todayStr;
   const [log, setLog] = useState<DailyLog | null>(null);
   const [modal, setModal] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [copying, setCopying] = useState(false);
+  const [copyToast, setCopyToast] = useState("");
   const [savingMeal, setSavingMeal] = useState(false);
   const [mealNamePrompt, setMealNamePrompt] = useState(false);
   const [mealName, setMealName] = useState("");
@@ -79,6 +83,8 @@ export default function LogPage() {
     try {
       await api.logs.copyYesterday(profile.id, date);
       await load();
+      setCopyToast("Yesterday's entries copied to this day!");
+      setTimeout(() => setCopyToast(""), 3000);
     } catch {}
     setCopying(false);
   }
@@ -179,27 +185,48 @@ export default function LogPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 pt-6 pb-28 space-y-4">
+      {/* Date navigation header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Food Log</h1>
-          <p className="text-sm text-gray-400 font-medium">
-            {format(new Date(date + "T12:00:00"), "EEEE, MMMM d")}
-          </p>
+        <button
+          onClick={() => router.push(`/log/${format(addDays(parseISO(date), -1), "yyyy-MM-dd")}`)}
+          className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <div className="text-center">
+          <h1 className="text-lg font-extrabold tracking-tight">
+            {isToday ? "Today" : format(parseISO(date), "EEEE")}
+          </h1>
+          <p className="text-xs text-gray-400">{format(parseISO(date), "MMMM d, yyyy")}</p>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={() => router.push(`/log/${format(addDays(parseISO(date), 1), "yyyy-MM-dd")}`)}
+            disabled={isToday}
+            className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors disabled:opacity-30"
+          >
+            <ChevronRight size={20} />
+          </button>
           <button
             onClick={copyYesterday}
             disabled={copying}
-            title="Copy yesterday's log"
-            className="tap-target flex items-center justify-center text-gray-400 hover:text-brand-600 disabled:opacity-40 rounded-xl hover:bg-gray-100"
+            title="Copy all food entries from yesterday into this day"
+            className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-brand-600 disabled:opacity-40 transition-colors"
           >
-            {copying ? <RefreshCw size={19} className="animate-spin" /> : <Copy size={19} />}
+            {copying ? <RefreshCw size={18} className="animate-spin" /> : <Copy size={18} />}
           </button>
-          <button onClick={load} className="tap-target flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-100">
-            <RefreshCw size={20} />
+          <button onClick={load} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors">
+            <RefreshCw size={18} />
           </button>
         </div>
       </div>
+
+      {/* Copy toast */}
+      {copyToast && (
+        <div className="rounded-xl px-4 py-2.5 text-sm font-semibold" style={{ background: "#edfcf2", color: "#0a7140" }}>
+          {copyToast}
+        </div>
+      )}
 
       {/* Calorie summary bar */}
       {log && (

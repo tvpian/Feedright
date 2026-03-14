@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [logModal, setLogModal] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [copyingYesterday, setCopyingYesterday] = useState(false);
+  const [copyToast, setCopyToast] = useState("");
   const [showAllNutrients, setShowAllNutrients] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteFood[]>([]);
   const [streaks, setStreaks] = useState<StreakInfo | null>(null);
@@ -68,6 +69,8 @@ export default function DashboardPage() {
     try {
       await api.logs.copyYesterday(profile.id, date);
       await load();
+      setCopyToast("Yesterday's food entries copied!");
+      setTimeout(() => setCopyToast(""), 3000);
     } catch {}
     setCopyingYesterday(false);
   }
@@ -195,6 +198,13 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+
+      {/* Copy toast */}
+      {copyToast && (
+        <div className="rounded-xl px-4 py-2.5 text-sm font-semibold" style={{ background: "#edfcf2", color: "#0a7140" }}>
+          {copyToast}
+        </div>
+      )}
 
       {/* Content fades/dims while fetching new date data */}
       <div className={`space-y-5 transition-opacity duration-200 ${fetching ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
@@ -378,10 +388,11 @@ export default function DashboardPage() {
         <button
           onClick={copyYesterday}
           disabled={copyingYesterday}
+          title="Duplicate all food entries from yesterday into this day"
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold text-gray-600 transition-all"
           style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", boxShadow: "0 2px 12px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)" }}
         >
-          <Copy size={13} /> {copyingYesterday ? "Copying…" : "Copy yesterday"}
+          <Copy size={13} /> {copyingYesterday ? "Copying…" : "Repeat yesterday"}
         </button>
         <button
           onClick={() => setLogModal(true)}
