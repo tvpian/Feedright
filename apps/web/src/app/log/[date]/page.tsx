@@ -11,8 +11,13 @@ import { MEAL_SLOTS, formatEntryAmount } from "@/lib/types";
 import { LogFoodModal } from "@/components/LogFoodModal";
 import { ConfirmModal } from "@/components/ConfirmModal";
 
-// Preset water amounts in ml (glass sizes)
-const WATER_PRESETS = [150, 250, 330, 500];
+// Preset water amounts in ml — labelled for quick recognition
+const WATER_PRESETS = [
+  { ml: 150, label: "Small",  icon: "🥤" },
+  { ml: 250, label: "Glass",  icon: "🥛" },
+  { ml: 330, label: "Can",    icon: "🥫" },
+  { ml: 500, label: "Bottle", icon: "🧴" },
+];
 
 export default function LogPage() {
   const { date } = useParams<{ date: string }>();
@@ -35,6 +40,9 @@ export default function LogPage() {
   // Water tracking
   const [water, setWater] = useState<WaterDaySummary | null>(null);
   const [addingWater, setAddingWater] = useState(false);
+  const [customWater, setCustomWater] = useState("");
+  const [showWaterLog, setShowWaterLog] = useState(false);
+  const [waterAnimation, setWaterAnimation] = useState(false);
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -127,13 +135,15 @@ export default function LogPage() {
   }
 
   async function addWater(ml: number) {
-    if (!profile) return;
+    if (!profile || ml <= 0) return;
     setAddingWater(true);
+    setWaterAnimation(true);
     try {
       const updated = await api.water.add(profile.id, date, ml);
       setWater(updated);
     } catch {}
     setAddingWater(false);
+    setTimeout(() => setWaterAnimation(false), 600);
   }
 
   async function deleteWaterEntry(entryId: string) {
@@ -168,7 +178,7 @@ export default function LogPage() {
   const waterPct = water ? Math.min((water.total_ml / water.goal_ml) * 100, 100) : 0;
 
   return (
-    <div className="max-w-xl mx-auto px-4 pt-6 pb-4 space-y-4">
+    <div className="max-w-xl mx-auto px-4 pt-6 pb-28 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight">Food Log</h1>
@@ -203,59 +213,137 @@ export default function LogPage() {
         </div>
       )}
 
-      {/* Water tracker */}
-      <div className="card p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
-              <Droplets size={15} className="text-blue-500" />
-            </div>
-            <span className="text-sm font-semibold text-gray-700">Water</span>
-          </div>
-          <span className="text-sm font-bold text-blue-600">
-            {water ? Math.round(water.total_ml) : 0}
-            <span className="text-xs text-gray-400 font-normal"> / {water?.goal_ml ?? 2500} ml</span>
-          </span>
-        </div>
-        {/* Progress bar */}
-        <div className="h-2 bg-blue-50 rounded-full overflow-hidden">
+      {/* Water tracker — redesigned */}
+      <div className="card overflow-hidden">
+        {/* Header + visual fill */}
+        <div className="relative px-4 pt-4 pb-3">
+          {/* Animated background fill */}
           <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${waterPct}%`, background: "linear-gradient(90deg,#38bdf8,#0ea5e9)" }}
+            className="absolute inset-0 transition-all duration-700 ease-out"
+            style={{
+              background: `linear-gradient(to top, rgba(56,189,248,${Math.min(waterPct / 100 * 0.15, 0.15)}) ${waterPct}%, transparent ${waterPct}%)`,
+            }}
           />
-        </div>
-        {/* Quick-add buttons */}
-        <div className="flex gap-2">
-          {WATER_PRESETS.map((ml) => (
-            <button
-              key={ml}
-              onClick={() => addWater(ml)}
-              disabled={addingWater}
-              className="flex-1 py-2 text-xs font-semibold rounded-xl text-blue-600 disabled:opacity-40 transition-colors"
-              style={{ background: "#eff6ff" }}
-            >
-              +{ml}ml
-            </button>
-          ))}
-        </div>
-        {/* Recent entries */}
-        {water && water.entries.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {water.entries.map((e) => (
-              <span
-                key={e.id}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold text-blue-600"
-                style={{ background: "#eff6ff" }}
-              >
-                {Math.round(e.amount_ml)}ml
-                <button
-                  onClick={() => deleteWaterEntry(e.id)}
-                  className="ml-0.5 text-blue-300 hover:text-red-400 transition-colors"
-                >
-                  <X size={10} />
-                </button>
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform duration-300 ${waterAnimation ? "scale-125" : ""}`}
+                style={{ background: "linear-gradient(135deg,#38bdf8,#0ea5e9)" }}>
+                <Droplets size={17} className="text-white" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-gray-800">Water</span>
+                <p className="text-[11px] text-gray-400">
+                  {waterPct >= 100 ? "Goal reached! 🎉" : `${Math.round(100 - waterPct)}% remaining`}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-lg font-extrabold text-blue-600 tabular-nums">
+                {water ? (water.total_ml >= 1000 ? `${(water.total_ml / 1000).toFixed(1)}L` : `${Math.round(water.total_ml)}ml`) : "0ml"}
+              </p>
+              <p className="text-[10px] text-gray-400">of {water ? (water.goal_ml >= 1000 ? `${(water.goal_ml / 1000).toFixed(1)}L` : `${water.goal_ml}ml`) : "2.5L"}</p>
+            </div>
+          </div>
+          {/* Progress bar */}
+          <div className="relative mt-3 h-2.5 bg-blue-50 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-700 ease-out ${waterAnimation ? "animate-pulse" : ""}`}
+              style={{
+                width: `${waterPct}%`,
+                background: waterPct >= 100
+                  ? "linear-gradient(90deg,#34d399,#10b981)"
+                  : "linear-gradient(90deg,#7dd3fc,#38bdf8,#0ea5e9)",
+              }}
+            />
+            {/* Percentage label inside bar */}
+            {waterPct > 15 && (
+              <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] font-bold text-white/80">
+                {Math.round(waterPct)}%
               </span>
+            )}
+          </div>
+        </div>
+
+        {/* Quick-add grid */}
+        <div className="px-4 pb-3">
+          <div className="grid grid-cols-4 gap-2">
+            {WATER_PRESETS.map(({ ml, label, icon }) => (
+              <button
+                key={ml}
+                onClick={() => addWater(ml)}
+                disabled={addingWater}
+                className="flex flex-col items-center gap-0.5 py-2.5 rounded-xl text-blue-600 disabled:opacity-40 transition-all active:scale-95 hover:bg-blue-100"
+                style={{ background: "#f0f9ff" }}
+              >
+                <span className="text-base leading-none">{icon}</span>
+                <span className="text-[11px] font-bold">+{ml}ml</span>
+                <span className="text-[9px] text-gray-400">{label}</span>
+              </button>
             ))}
+          </div>
+
+          {/* Custom amount row */}
+          <div className="flex gap-2 mt-2">
+            <div className="relative flex-1">
+              <input
+                type="number"
+                inputMode="numeric"
+                value={customWater}
+                onChange={(e) => setCustomWater(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const ml = parseInt(customWater);
+                    if (ml > 0) { addWater(ml); setCustomWater(""); }
+                  }
+                }}
+                placeholder="Custom ml"
+                className="w-full pl-3 pr-10 py-2 text-xs border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50/50"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">ml</span>
+            </div>
+            <button
+              onClick={() => {
+                const ml = parseInt(customWater);
+                if (ml > 0) { addWater(ml); setCustomWater(""); }
+              }}
+              disabled={addingWater || !customWater || parseInt(customWater) <= 0}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-40 transition-colors"
+              style={{ background: "linear-gradient(135deg,#38bdf8,#0ea5e9)" }}
+            >
+              +Add
+            </button>
+          </div>
+        </div>
+
+        {/* Recent entries — collapsible */}
+        {water && water.entries.length > 0 && (
+          <div className="border-t border-black/[0.04]">
+            <button
+              onClick={() => setShowWaterLog(!showWaterLog)}
+              className="w-full px-4 py-2 flex items-center justify-between text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <span>{water.entries.length} entries today</span>
+              <span>{showWaterLog ? "Hide ▴" : "Show ▾"}</span>
+            </button>
+            {showWaterLog && (
+              <div className="px-4 pb-3 flex flex-wrap gap-1.5">
+                {water.entries.map((e) => (
+                  <span
+                    key={e.id}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold text-blue-600"
+                    style={{ background: "#f0f9ff" }}
+                  >
+                    {Math.round(e.amount_ml)}ml
+                    <button
+                      onClick={() => deleteWaterEntry(e.id)}
+                      className="ml-0.5 text-blue-300 hover:text-red-400 transition-colors"
+                    >
+                      <X size={10} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

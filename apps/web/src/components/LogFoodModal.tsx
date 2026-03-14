@@ -147,8 +147,8 @@ export function LogFoodModal({
     return () => { clearTimeout(t); setWhatIfLoading(false); };
   }, [selected?.id, amountInGrams, userId, date]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
     if (!selected) { setError("Select a food first."); return; }
     const g = amountInGrams;
     if (g <= 0) { setError("Enter a valid amount."); return; }
@@ -576,17 +576,19 @@ export function LogFoodModal({
             </div>
 
             {error && <p className="text-xs font-semibold mt-1" style={{ color: "#be123c" }}>{error}</p>}
-
-            <button
-              type="submit"
-              disabled={!selected || saving}
-              className="btn-primary w-full py-3.5 disabled:opacity-50 mb-2"
-            >
-              {saving ? "Saving…" : "Add to Log"}
-            </button>
-            {/* Extra padding for mobile so submit is visible above keyboard/nav */}
-            <div className="h-4 sm:h-0" />
           </form>
+        </div>
+
+        {/* Sticky submit footer — always visible at bottom of modal */}
+        <div className="shrink-0 px-4 pb-4 pt-2 border-t border-black/[0.06] bg-white rounded-b-3xl safe-b">
+          <button
+            type="button"
+            onClick={() => handleSubmit()}
+            disabled={!selected || saving}
+            className="btn-primary w-full py-3.5 disabled:opacity-50"
+          >
+            {saving ? "Saving…" : "Add to Log"}
+          </button>
         </div>
       </div>
     </div>

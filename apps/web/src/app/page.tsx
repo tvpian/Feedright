@@ -164,7 +164,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="max-w-xl mx-auto px-4 pt-6 pb-4 space-y-5">
+    <div className="max-w-xl mx-auto px-4 pt-6 pb-28 space-y-5">
       {/* Header with date navigation */}
       <div className="flex items-center justify-between">
         <button

@@ -237,11 +237,13 @@ export function AiCoach({ userId, date }: Props) {
                     </span>
                   </div>
                   <p className="text-[10px] text-gray-400 text-center">
-                    {elapsed < 10
+                    {elapsed < 8
                       ? "Preparing your personalised advice"
-                      : elapsed < 30
-                        ? "The AI model is thinking — this usually takes 30–60 seconds"
-                        : "Almost there — generating your recommendations"}
+                      : elapsed < 25
+                        ? "The AI model is thinking — this typically takes up to 60–70s"
+                        : elapsed < 50
+                          ? "Still working — hang tight, almost halfway there"
+                          : "Almost done — finalising your recommendations"}
                   </p>
                 </div>
               )}
