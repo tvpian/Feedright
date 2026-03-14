@@ -20,7 +20,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import create_tables, seed_food_db
-from .routers import advisor, analytics, foods, logs, profiles, recommendations, saved_meals, targets, water, weight
+from .routers import advisor, analytics, foods, logs, meal_plan, profiles, recommendations, saved_meals, targets, water, weight
 
 
 @asynccontextmanager
@@ -56,6 +56,7 @@ app.include_router(weight.router,           prefix="/api/weight",           tags
 app.include_router(analytics.router,        prefix="/api/analytics",        tags=["analytics"])
 app.include_router(advisor.router,          prefix="/api/advisor",          tags=["advisor"])
 app.include_router(water.router,            prefix="/api/water",            tags=["water"])
+app.include_router(meal_plan.router,        prefix="/api/meal-plan",        tags=["meal-plan"])
 
 
 @app.get("/health")

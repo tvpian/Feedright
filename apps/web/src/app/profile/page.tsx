@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@/lib/userContext";
 import { api } from "@/lib/api";
-import { User, ChevronRight, Settings, Scale, BookMarked, BarChart3, Lock, Unlock, KeySquare, LogOut } from "lucide-react";
+import { User, ChevronRight, Settings, Scale, BookMarked, BarChart3, Lock, Unlock, KeySquare, LogOut, CalendarDays } from "lucide-react";
 import { HEALTH_GOALS, HEALTH_CONDITIONS, NUTRIENT_LABELS, NUTRIENT_UNITS } from "@/lib/types";
 import type { DailyTargets } from "@/lib/types";
 
@@ -338,10 +338,11 @@ export default function ProfilePage() {
           </div>
 
           {/* Quick Links */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {[
               { href: "/weight", icon: <Scale size={20} />, label: "Weight", bg: "#edfcf2", color: "#0a7140" },
               { href: "/saved-meals", icon: <BookMarked size={20} />, label: "Meals", bg: "#eff6ff", color: "#1d4ed8" },
+              { href: "/meal-plan", icon: <CalendarDays size={20} />, label: "Meal Plan", bg: "#fdf4ff", color: "#7e22ce" },
               { href: "/insights", icon: <BarChart3 size={20} />, label: "Insights", bg: "#fefce8", color: "#854d0e" },
             ].map(({ href, icon, label, bg, color }) => (
               <Link key={href} href={href} className="card p-3 text-center transition-all hover:scale-105" style={{ touchAction: "manipulation" }}>

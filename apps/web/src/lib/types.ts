@@ -546,3 +546,26 @@ export function formatEntryAmount(entry: LogEntry): string {
   }
   return `${Math.round(g)}g`;
 }
+
+// ── Meal Plan ────────────────────────────────────────────────────────────────
+
+export interface MealSlotPlan {
+  slot: string;
+  foods: FoodItem[];
+  servings_g: number[];
+  estimated_calories: number;
+}
+
+export interface DayPlan {
+  day: string;
+  day_label: string;
+  meals: MealSlotPlan[];
+  total_calories: number;
+}
+
+export interface WeeklyPlan {
+  user_id: string;
+  start_date: string;
+  days: DayPlan[];
+  constraints: string[];
+}

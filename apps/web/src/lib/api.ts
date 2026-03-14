@@ -218,4 +218,16 @@ export const api = {
     delete: (userId: string, date: string, entryId: string) =>
       fetch(`${BASE}/water/${userId}/${date}/${entryId}`, { method: "DELETE" }),
   },
+
+  // ── Meal Planner ────────────────────────────────────────────────────────────
+  mealPlan: {
+    generate: (
+      userId: string,
+      opts?: { start_date?: string; constraints?: string[]; max_daily_calories?: number }
+    ) =>
+      _fetch<import("./types").WeeklyPlan>(`${BASE}/meal-plan/${userId}`, {
+        method: "POST",
+        body: JSON.stringify(opts ?? {}),
+      }),
+  },
 };

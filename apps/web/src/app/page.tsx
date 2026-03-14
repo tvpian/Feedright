@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { format, addDays, parseISO } from "date-fns";
-import { PlusCircle, RefreshCw, Copy, ChevronRight, AlertCircle, Scale, Zap, ChevronLeft, Lock, Calendar } from "lucide-react";
+import { PlusCircle, RefreshCw, Copy, ChevronRight, AlertCircle, Scale, Zap, ChevronLeft, Lock, Calendar, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/userContext";
@@ -269,6 +269,27 @@ export default function DashboardPage() {
 
       {/* AI Coach */}
       <AiCoach userId={profile.id} date={date} />
+
+      {/* Weekly Meal Plan CTA */}
+      <Link
+        href="/meal-plan"
+        className="block rounded-2xl p-4 transition-all hover:scale-[1.01] active:scale-[0.99]"
+        style={{
+          background: "linear-gradient(135deg,#fdf4ff,#ede9fe)",
+          boxShadow: "0 1px 6px rgba(126,34,206,0.10), 0 0 0 1px rgba(126,34,206,0.08)",
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(126,34,206,0.12)" }}>
+            <CalendarDays size={20} className="text-purple-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-purple-800">Weekly Meal Plan</p>
+            <p className="text-xs text-purple-500 mt-0.5">Generate a personalized 7-day plan tailored to your goals</p>
+          </div>
+          <ChevronRight size={16} className="text-purple-400 shrink-0" />
+        </div>
+      </Link>
 
       {/* Today's log entries */}
       {(log?.entries.length ?? 0) > 0 && (

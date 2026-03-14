@@ -164,29 +164,73 @@ def search_foods(
     limit: int = Query(30, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
+    from difflib import SequenceMatcher
+
     query = db.query(FoodDB)
-    if q:
-        # SQLite LIKE search (case-insensitive via LOWER)
-        query = query.filter(
-            FoodDB.name.ilike(f"%{q}%")
-            # alias search covered by a separate pass below
-        )
     if category:
         query = query.filter(FoodDB.category == category)
-    results = query.limit(limit).all()
 
-    # Also check aliases if q provided
-    if q and len(results) < limit:
+    if not q:
+        return [food_db_to_schema(r) for r in query.limit(limit).all()]
+
+    q_lower = q.strip().lower()
+
+    # ── 1. Exact ILIKE matches (fast, covers most queries) ────────────
+    exact = (
+        query.filter(FoodDB.name.ilike(f"%{q}%")).limit(limit).all()
+    )
+
+    # Also check aliases
+    if len(exact) < limit:
         alias_matches = (
-            db.query(FoodDB)
-            .filter(FoodDB.aliases.ilike(f"%{q}%"))
-            .limit(limit - len(results))
+            query.filter(FoodDB.aliases.ilike(f"%{q}%"))
+            .limit(limit - len(exact))
             .all()
         )
-        seen = {r.id for r in results}
-        results += [r for r in alias_matches if r.id not in seen]
+        seen = {r.id for r in exact}
+        exact += [r for r in alias_matches if r.id not in seen]
 
-    return [food_db_to_schema(r) for r in results[:limit]]
+    if len(exact) >= limit:
+        return [food_db_to_schema(r) for r in exact[:limit]]
+
+    # ── 2. Fuzzy fallback (typo tolerance) ────────────────────────────
+    # Load all candidate names and score them
+    seen_ids = {r.id for r in exact}
+    all_foods = query.all()
+    scored: list[tuple[float, FoodDB]] = []
+
+    for food in all_foods:
+        if food.id in seen_ids:
+            continue
+        name_lower = food.name.lower()
+        # SequenceMatcher ratio (0.0–1.0)
+        ratio = SequenceMatcher(None, q_lower, name_lower).ratio()
+        # Also check if any word in the food name starts with the query
+        words = name_lower.split()
+        prefix_boost = 0.0
+        for word in words:
+            if word.startswith(q_lower[:3]) if len(q_lower) >= 3 else word.startswith(q_lower):
+                prefix_boost = 0.15
+                break
+        # Check aliases too
+        try:
+            aliases = json.loads(str(food.aliases)) if getattr(food, 'aliases', None) else []
+        except Exception:
+            aliases = []
+        for alias in aliases:
+            alias_ratio = SequenceMatcher(None, q_lower, alias.lower()).ratio()
+            ratio = max(ratio, alias_ratio)
+
+        final_score = ratio + prefix_boost
+        if final_score >= 0.45:  # threshold for fuzzy match
+            scored.append((final_score, food))
+
+    scored.sort(key=lambda x: -x[0])
+    remaining = limit - len(exact)
+    fuzzy_results = [food for _, food in scored[:remaining]]
+
+    combined = exact + fuzzy_results
+    return [food_db_to_schema(r) for r in combined[:limit]]
 
 
 @router.get("/{food_id}", response_model=FoodOut)
