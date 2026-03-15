@@ -46,6 +46,7 @@ export default function MealPlanPage() {
       const result = await api.mealPlan.generate(profile.id, {
         start_date: format(new Date(), "yyyy-MM-dd"),
         constraints,
+        seed: Math.floor(Math.random() * 2147483647),
       });
       setPlan(result);
     } catch (err: any) {

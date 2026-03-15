@@ -9,6 +9,7 @@ slots (Breakfast, Lunch, Dinner, Snack) while trying to:
 from __future__ import annotations
 
 import json
+import random
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -58,6 +59,7 @@ class MealPlanRequest(BaseModel):
     start_date: str | None = None  # ISO date, defaults to today
     constraints: list[str] = []  # "no-cook", "vegetarian", "vegan"
     max_daily_calories: float | None = None
+    seed: int | None = None  # random seed for variety; different seed = different plan
 
 
 # ── Slot definitions ──────────────────────────────────────────────────────────
@@ -88,6 +90,9 @@ def generate_meal_plan(
 
     start = date.fromisoformat(body.start_date) if body.start_date else date.today()
     avoid_ids: list[str] = json.loads(str(row.avoid_foods)) if getattr(row, 'avoid_foods', None) else []
+
+    # Random seed for variety — different seed = different plan
+    rng = random.Random(body.seed if body.seed is not None else random.randint(0, 2**31))
 
     # Load food library once
     all_foods = db.query(FoodDB).all()
@@ -140,21 +145,32 @@ def generate_meal_plan(
             slot_cal = 0.0
             slot_nutrients = empty_nutrients()
 
-            candidates = result.singles[:20]  # top 20 candidates
+            candidates = result.singles[:25]  # top 25 candidates
 
-            # Sort by (variety_penalty, -score) to prefer unused foods
+            # Shuffle top candidates with weighted randomness for variety
+            # Group into tiers: top-5 (high chance), next-10 (medium), rest (low)
+            tier1 = candidates[:5]
+            tier2 = candidates[5:15]
+            tier3 = candidates[15:]
+            rng.shuffle(tier1)
+            rng.shuffle(tier2)
+            rng.shuffle(tier3)
+            candidates_shuffled = tier1 + tier2 + tier3
+
+            # Then sort by variety penalty (less-used first) but within same
+            # usage count, the random shuffle above keeps order varied
             def variety_sort_key(rec):
                 usage = recently_used.get(rec.food.id, 0)
-                return (usage, -rec.score)
+                return usage  # tie-break is insertion order (randomized above)
 
-            candidates_sorted = sorted(candidates, key=variety_sort_key)
+            candidates_sorted = sorted(candidates_shuffled, key=variety_sort_key)
 
-            items_for_slot = 1 if slot_name == "Snack" else 2
+            items_for_slot = 2 if slot_name == "Snack" else 3
 
             for rec in candidates_sorted:
                 if len(slot_foods) >= items_for_slot:
                     break
-                if slot_cal + rec.estimated_calories > slot_cal_budget * 1.3:
+                if slot_cal + rec.estimated_calories > slot_cal_budget * 1.5:
                     continue
                 # Skip if already in this slot
                 if any(f.id == rec.food.id for f, _, _ in slot_foods):

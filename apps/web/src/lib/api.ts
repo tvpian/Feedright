@@ -223,7 +223,7 @@ export const api = {
   mealPlan: {
     generate: (
       userId: string,
-      opts?: { start_date?: string; constraints?: string[]; max_daily_calories?: number }
+      opts?: { start_date?: string; constraints?: string[]; max_daily_calories?: number; seed?: number }
     ) =>
       _fetch<import("./types").WeeklyPlan>(`${BASE}/meal-plan/${userId}`, {
         method: "POST",

@@ -2621,4 +2621,841 @@ SEED_FOODS: list[dict] = [
             "saturated_fat": 2.0
         }
     },
+
+    # ── Extended foods for variety (batch 2) ──────────────────────────────────
+
+    # Additional proteins
+    {
+        "name": "Tofu (firm)",
+        "aliases": ["tofu", "bean curd", "soy tofu"],
+        "category": "protein",
+        "default_serving_g": 125,
+        "default_unit": "g",
+        "tags": ["vegan", "high-protein", "vegetarian", "no-cook"],
+        "nutrients_per_100g": {
+            "calories": 144, "protein": 17.3, "fat": 8.7, "carbs": 2.8,
+            "fiber": 2.3, "omega3": 0.4,
+            "magnesium": 58, "potassium": 121, "zinc": 1.6, "iron": 2.7,
+            "calcium": 350, "selenium": 17, "iodine": 2, "choline": 28,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 29, "vitamin_c": 0,
+            "sugar": 0.7, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 0.1, "vitamin_k": 2,
+            "vitamin_b1": 0.16, "vitamin_b2": 0.1, "vitamin_b3": 0.4,
+            "vitamin_b5": 0.1, "vitamin_b6": 0.1,
+            "copper": 0.4, "manganese": 1.2, "chromium": 0,
+            "phosphorus": 190, "sodium": 14, "saturated_fat": 1.3
+        }
+    },
+    {
+        "name": "Tempeh",
+        "aliases": ["tempeh", "fermented soy"],
+        "category": "protein",
+        "default_serving_g": 100,
+        "default_unit": "g",
+        "tags": ["vegan", "high-protein", "vegetarian", "fermented", "needs-cooking"],
+        "nutrients_per_100g": {
+            "calories": 192, "protein": 20.3, "fat": 10.8, "carbs": 7.6,
+            "fiber": 5.0, "omega3": 0.14,
+            "magnesium": 81, "potassium": 412, "zinc": 1.1, "iron": 2.7,
+            "calcium": 111, "selenium": 9, "iodine": 2, "choline": 20,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 24, "vitamin_c": 0,
+            "sugar": 0, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 0.1, "vitamin_k": 0,
+            "vitamin_b1": 0.08, "vitamin_b2": 0.36, "vitamin_b3": 2.6,
+            "vitamin_b5": 0.3, "vitamin_b6": 0.2,
+            "copper": 0.6, "manganese": 1.3, "chromium": 0,
+            "phosphorus": 266, "sodium": 9, "saturated_fat": 2.5
+        }
+    },
+    {
+        "name": "Shrimp (cooked)",
+        "aliases": ["shrimp", "prawns", "prawn"],
+        "category": "protein",
+        "default_serving_g": 100,
+        "default_unit": "g",
+        "tags": ["seafood", "fish", "high-protein", "needs-cooking"],
+        "nutrients_per_100g": {
+            "calories": 99, "protein": 24.0, "fat": 0.3, "carbs": 0.2,
+            "fiber": 0, "omega3": 0.5,
+            "magnesium": 39, "potassium": 259, "zinc": 1.6, "iron": 0.5,
+            "calcium": 70, "selenium": 40, "iodine": 35, "choline": 70,
+            "vitamin_d": 0.2, "vitamin_b12": 1.1, "folate": 3, "vitamin_c": 0,
+            "sugar": 0, "caffeine": 0,
+            "vitamin_a": 54, "vitamin_e": 1.3, "vitamin_k": 0.3,
+            "vitamin_b1": 0.02, "vitamin_b2": 0.02, "vitamin_b3": 2.6,
+            "vitamin_b5": 0.3, "vitamin_b6": 0.1,
+            "copper": 0.26, "manganese": 0.05, "chromium": 0,
+            "phosphorus": 205, "sodium": 111, "saturated_fat": 0.1
+        }
+    },
+    {
+        "name": "Pork Tenderloin",
+        "aliases": ["pork", "pork loin", "pork fillet"],
+        "category": "protein",
+        "default_serving_g": 150,
+        "default_unit": "g",
+        "tags": ["meat", "high-protein", "needs-cooking"],
+        "nutrients_per_100g": {
+            "calories": 143, "protein": 26.2, "fat": 3.5, "carbs": 0,
+            "fiber": 0, "omega3": 0.02,
+            "magnesium": 28, "potassium": 383, "zinc": 2.0, "iron": 1.0,
+            "calcium": 5, "selenium": 41, "iodine": 3, "choline": 60,
+            "vitamin_d": 0.4, "vitamin_b12": 0.6, "folate": 1, "vitamin_c": 1,
+            "sugar": 0, "caffeine": 0,
+            "vitamin_a": 2, "vitamin_e": 0.3, "vitamin_k": 0,
+            "vitamin_b1": 0.87, "vitamin_b2": 0.26, "vitamin_b3": 6.3,
+            "vitamin_b5": 0.9, "vitamin_b6": 0.6,
+            "copper": 0.07, "manganese": 0.01, "chromium": 0,
+            "phosphorus": 246, "sodium": 48, "saturated_fat": 1.2
+        }
+    },
+    {
+        "name": "Lamb (leg, lean)",
+        "aliases": ["lamb", "lamb leg", "mutton"],
+        "category": "protein",
+        "default_serving_g": 150,
+        "default_unit": "g",
+        "tags": ["meat", "high-protein", "needs-cooking"],
+        "nutrients_per_100g": {
+            "calories": 162, "protein": 25.5, "fat": 6.3, "carbs": 0,
+            "fiber": 0, "omega3": 0.15,
+            "magnesium": 23, "potassium": 310, "zinc": 4.7, "iron": 1.8,
+            "calcium": 12, "selenium": 26, "iodine": 3, "choline": 70,
+            "vitamin_d": 0.1, "vitamin_b12": 2.6, "folate": 19, "vitamin_c": 0,
+            "sugar": 0, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 0.1, "vitamin_k": 3.3,
+            "vitamin_b1": 0.1, "vitamin_b2": 0.24, "vitamin_b3": 6.6,
+            "vitamin_b5": 0.7, "vitamin_b6": 0.13,
+            "copper": 0.11, "manganese": 0.02, "chromium": 0,
+            "phosphorus": 188, "sodium": 59, "saturated_fat": 2.6
+        }
+    },
+
+    # Additional vegetables
+    {
+        "name": "Cauliflower",
+        "aliases": ["cauliflower", "gobi"],
+        "category": "vegetable",
+        "default_serving_g": 100,
+        "default_unit": "g",
+        "tags": ["vegetable", "vegan", "no-cook"],
+        "nutrients_per_100g": {
+            "calories": 25, "protein": 1.9, "fat": 0.3, "carbs": 5.0,
+            "fiber": 2.0, "omega3": 0.02,
+            "magnesium": 15, "potassium": 299, "zinc": 0.3, "iron": 0.4,
+            "calcium": 22, "selenium": 0.6, "iodine": 2, "choline": 44,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 57, "vitamin_c": 48,
+            "sugar": 1.9, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 0.1, "vitamin_k": 15.5,
+            "vitamin_b1": 0.05, "vitamin_b2": 0.06, "vitamin_b3": 0.5,
+            "vitamin_b5": 0.67, "vitamin_b6": 0.18,
+            "copper": 0.04, "manganese": 0.16, "chromium": 1.1,
+            "phosphorus": 44, "sodium": 30, "saturated_fat": 0
+        }
+    },
+    {
+        "name": "Carrot",
+        "aliases": ["carrots", "gajar"],
+        "category": "vegetable",
+        "default_serving_g": 80,
+        "default_unit": "g",
+        "tags": ["vegetable", "vegan", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 41, "protein": 0.9, "fat": 0.2, "carbs": 9.6,
+            "fiber": 2.8, "omega3": 0,
+            "magnesium": 12, "potassium": 320, "zinc": 0.2, "iron": 0.3,
+            "calcium": 33, "selenium": 0.1, "iodine": 5, "choline": 8.8,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 19, "vitamin_c": 5.9,
+            "sugar": 4.7, "caffeine": 0,
+            "vitamin_a": 835, "vitamin_e": 0.7, "vitamin_k": 13.2,
+            "vitamin_b1": 0.07, "vitamin_b2": 0.06, "vitamin_b3": 1.0,
+            "vitamin_b5": 0.27, "vitamin_b6": 0.14,
+            "copper": 0.05, "manganese": 0.14, "chromium": 2.2,
+            "phosphorus": 35, "sodium": 69, "saturated_fat": 0
+        }
+    },
+    {
+        "name": "Cucumber",
+        "aliases": ["cucumber", "kheera"],
+        "category": "vegetable",
+        "default_serving_g": 100,
+        "default_unit": "g",
+        "tags": ["vegetable", "vegan", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 15, "protein": 0.7, "fat": 0.1, "carbs": 3.6,
+            "fiber": 0.5, "omega3": 0,
+            "magnesium": 13, "potassium": 147, "zinc": 0.2, "iron": 0.3,
+            "calcium": 16, "selenium": 0.3, "iodine": 0.3, "choline": 6,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 7, "vitamin_c": 2.8,
+            "sugar": 1.7, "caffeine": 0,
+            "vitamin_a": 5, "vitamin_e": 0, "vitamin_k": 16.4,
+            "vitamin_b1": 0.03, "vitamin_b2": 0.03, "vitamin_b3": 0.1,
+            "vitamin_b5": 0.26, "vitamin_b6": 0.04,
+            "copper": 0.04, "manganese": 0.08, "chromium": 0.9,
+            "phosphorus": 24, "sodium": 2, "saturated_fat": 0
+        }
+    },
+    {
+        "name": "Zucchini",
+        "aliases": ["zucchini", "courgette"],
+        "category": "vegetable",
+        "default_serving_g": 100,
+        "default_unit": "g",
+        "tags": ["vegetable", "vegan", "needs-cooking"],
+        "nutrients_per_100g": {
+            "calories": 17, "protein": 1.2, "fat": 0.3, "carbs": 3.1,
+            "fiber": 1.0, "omega3": 0.03,
+            "magnesium": 18, "potassium": 261, "zinc": 0.3, "iron": 0.4,
+            "calcium": 16, "selenium": 0.2, "iodine": 0.3, "choline": 9.5,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 24, "vitamin_c": 17.9,
+            "sugar": 2.5, "caffeine": 0,
+            "vitamin_a": 10, "vitamin_e": 0.1, "vitamin_k": 4.3,
+            "vitamin_b1": 0.05, "vitamin_b2": 0.09, "vitamin_b3": 0.5,
+            "vitamin_b5": 0.2, "vitamin_b6": 0.16,
+            "copper": 0.05, "manganese": 0.18, "chromium": 0,
+            "phosphorus": 38, "sodium": 8, "saturated_fat": 0.1
+        }
+    },
+    {
+        "name": "Green Peas",
+        "aliases": ["peas", "matar", "garden peas"],
+        "category": "vegetable",
+        "default_serving_g": 80,
+        "default_unit": "g",
+        "tags": ["vegetable", "vegan", "needs-cooking", "high-fiber"],
+        "nutrients_per_100g": {
+            "calories": 81, "protein": 5.4, "fat": 0.4, "carbs": 14.5,
+            "fiber": 5.7, "omega3": 0.02,
+            "magnesium": 33, "potassium": 244, "zinc": 1.2, "iron": 1.5,
+            "calcium": 25, "selenium": 1.8, "iodine": 0.3, "choline": 28,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 65, "vitamin_c": 40,
+            "sugar": 5.7, "caffeine": 0,
+            "vitamin_a": 38, "vitamin_e": 0.1, "vitamin_k": 24.8,
+            "vitamin_b1": 0.27, "vitamin_b2": 0.13, "vitamin_b3": 2.1,
+            "vitamin_b5": 0.1, "vitamin_b6": 0.17,
+            "copper": 0.18, "manganese": 0.41, "chromium": 0,
+            "phosphorus": 108, "sodium": 5, "saturated_fat": 0.1
+        }
+    },
+    {
+        "name": "Cabbage",
+        "aliases": ["cabbage", "patta gobi"],
+        "category": "vegetable",
+        "default_serving_g": 80,
+        "default_unit": "g",
+        "tags": ["vegetable", "vegan", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 25, "protein": 1.3, "fat": 0.1, "carbs": 5.8,
+            "fiber": 2.5, "omega3": 0.03,
+            "magnesium": 12, "potassium": 170, "zinc": 0.2, "iron": 0.5,
+            "calcium": 40, "selenium": 0.3, "iodine": 1.5, "choline": 10.7,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 43, "vitamin_c": 36.6,
+            "sugar": 3.2, "caffeine": 0,
+            "vitamin_a": 5, "vitamin_e": 0.2, "vitamin_k": 76,
+            "vitamin_b1": 0.06, "vitamin_b2": 0.04, "vitamin_b3": 0.2,
+            "vitamin_b5": 0.21, "vitamin_b6": 0.12,
+            "copper": 0.02, "manganese": 0.16, "chromium": 0,
+            "phosphorus": 26, "sodium": 18, "saturated_fat": 0
+        }
+    },
+    {
+        "name": "Beetroot",
+        "aliases": ["beets", "chukandar"],
+        "category": "vegetable",
+        "default_serving_g": 100,
+        "default_unit": "g",
+        "tags": ["vegetable", "vegan", "needs-cooking"],
+        "nutrients_per_100g": {
+            "calories": 43, "protein": 1.6, "fat": 0.2, "carbs": 9.6,
+            "fiber": 2.8, "omega3": 0.01,
+            "magnesium": 23, "potassium": 325, "zinc": 0.4, "iron": 0.8,
+            "calcium": 16, "selenium": 0.7, "iodine": 0.3, "choline": 6,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 109, "vitamin_c": 4.9,
+            "sugar": 6.8, "caffeine": 0,
+            "vitamin_a": 2, "vitamin_e": 0, "vitamin_k": 0.2,
+            "vitamin_b1": 0.03, "vitamin_b2": 0.04, "vitamin_b3": 0.3,
+            "vitamin_b5": 0.16, "vitamin_b6": 0.07,
+            "copper": 0.08, "manganese": 0.33, "chromium": 0,
+            "phosphorus": 40, "sodium": 78, "saturated_fat": 0
+        }
+    },
+
+    # Additional fruits
+    {
+        "name": "Apple",
+        "aliases": ["apple", "seb"],
+        "category": "fruit",
+        "default_serving_g": 180,
+        "default_unit": "medium",
+        "tags": ["fruit", "vegan", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 52, "protein": 0.3, "fat": 0.2, "carbs": 13.8,
+            "fiber": 2.4, "omega3": 0.01,
+            "magnesium": 5, "potassium": 107, "zinc": 0, "iron": 0.1,
+            "calcium": 6, "selenium": 0, "iodine": 0.5, "choline": 3.4,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 3, "vitamin_c": 4.6,
+            "sugar": 10.4, "caffeine": 0,
+            "vitamin_a": 3, "vitamin_e": 0.2, "vitamin_k": 2.2,
+            "vitamin_b1": 0.02, "vitamin_b2": 0.03, "vitamin_b3": 0.1,
+            "vitamin_b5": 0.06, "vitamin_b6": 0.04,
+            "copper": 0.03, "manganese": 0.04, "chromium": 1.4,
+            "phosphorus": 11, "sodium": 1, "saturated_fat": 0
+        }
+    },
+    {
+        "name": "Mango",
+        "aliases": ["mango", "aam"],
+        "category": "fruit",
+        "default_serving_g": 165,
+        "default_unit": "cup",
+        "tags": ["fruit", "vegan", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 60, "protein": 0.8, "fat": 0.4, "carbs": 15.0,
+            "fiber": 1.6, "omega3": 0.02,
+            "magnesium": 10, "potassium": 168, "zinc": 0.1, "iron": 0.2,
+            "calcium": 11, "selenium": 0.6, "iodine": 0.3, "choline": 7.6,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 43, "vitamin_c": 36.4,
+            "sugar": 13.7, "caffeine": 0,
+            "vitamin_a": 54, "vitamin_e": 0.9, "vitamin_k": 4.2,
+            "vitamin_b1": 0.03, "vitamin_b2": 0.04, "vitamin_b3": 0.7,
+            "vitamin_b5": 0.2, "vitamin_b6": 0.12,
+            "copper": 0.11, "manganese": 0.06, "chromium": 0,
+            "phosphorus": 14, "sodium": 1, "saturated_fat": 0.1
+        }
+    },
+    {
+        "name": "Papaya",
+        "aliases": ["papaya", "papita"],
+        "category": "fruit",
+        "default_serving_g": 150,
+        "default_unit": "cup",
+        "tags": ["fruit", "vegan", "no-cook", "quick", "vitamin-c"],
+        "nutrients_per_100g": {
+            "calories": 43, "protein": 0.5, "fat": 0.3, "carbs": 10.8,
+            "fiber": 1.7, "omega3": 0.01,
+            "magnesium": 21, "potassium": 182, "zinc": 0.1, "iron": 0.3,
+            "calcium": 20, "selenium": 0.6, "iodine": 0.3, "choline": 6.1,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 37, "vitamin_c": 60.9,
+            "sugar": 7.8, "caffeine": 0,
+            "vitamin_a": 47, "vitamin_e": 0.3, "vitamin_k": 2.6,
+            "vitamin_b1": 0.02, "vitamin_b2": 0.03, "vitamin_b3": 0.4,
+            "vitamin_b5": 0.19, "vitamin_b6": 0.04,
+            "copper": 0.01, "manganese": 0.04, "chromium": 0,
+            "phosphorus": 10, "sodium": 8, "saturated_fat": 0.1
+        }
+    },
+    {
+        "name": "Watermelon",
+        "aliases": ["watermelon", "tarbooz"],
+        "category": "fruit",
+        "default_serving_g": 280,
+        "default_unit": "slice",
+        "tags": ["fruit", "vegan", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 30, "protein": 0.6, "fat": 0.2, "carbs": 7.6,
+            "fiber": 0.4, "omega3": 0.01,
+            "magnesium": 10, "potassium": 112, "zinc": 0.1, "iron": 0.2,
+            "calcium": 7, "selenium": 0.4, "iodine": 0.2, "choline": 4.1,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 3, "vitamin_c": 8.1,
+            "sugar": 6.2, "caffeine": 0,
+            "vitamin_a": 28, "vitamin_e": 0.1, "vitamin_k": 0.1,
+            "vitamin_b1": 0.03, "vitamin_b2": 0.02, "vitamin_b3": 0.2,
+            "vitamin_b5": 0.22, "vitamin_b6": 0.05,
+            "copper": 0.04, "manganese": 0.04, "chromium": 0,
+            "phosphorus": 11, "sodium": 1, "saturated_fat": 0
+        }
+    },
+    {
+        "name": "Grapes",
+        "aliases": ["grapes", "angoor"],
+        "category": "fruit",
+        "default_serving_g": 150,
+        "default_unit": "cup",
+        "tags": ["fruit", "vegan", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 69, "protein": 0.7, "fat": 0.2, "carbs": 18.1,
+            "fiber": 0.9, "omega3": 0.01,
+            "magnesium": 7, "potassium": 191, "zinc": 0.1, "iron": 0.4,
+            "calcium": 10, "selenium": 0.1, "iodine": 0, "choline": 5.6,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 2, "vitamin_c": 3.2,
+            "sugar": 15.5, "caffeine": 0,
+            "vitamin_a": 3, "vitamin_e": 0.2, "vitamin_k": 14.6,
+            "vitamin_b1": 0.07, "vitamin_b2": 0.07, "vitamin_b3": 0.2,
+            "vitamin_b5": 0.05, "vitamin_b6": 0.09,
+            "copper": 0.13, "manganese": 0.07, "chromium": 0,
+            "phosphorus": 20, "sodium": 2, "saturated_fat": 0.1
+        }
+    },
+    {
+        "name": "Pineapple",
+        "aliases": ["pineapple", "ananas"],
+        "category": "fruit",
+        "default_serving_g": 165,
+        "default_unit": "cup",
+        "tags": ["fruit", "vegan", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 50, "protein": 0.5, "fat": 0.1, "carbs": 13.1,
+            "fiber": 1.4, "omega3": 0.01,
+            "magnesium": 12, "potassium": 109, "zinc": 0.1, "iron": 0.3,
+            "calcium": 13, "selenium": 0.1, "iodine": 0.1, "choline": 5.5,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 18, "vitamin_c": 47.8,
+            "sugar": 9.9, "caffeine": 0,
+            "vitamin_a": 3, "vitamin_e": 0, "vitamin_k": 0.7,
+            "vitamin_b1": 0.08, "vitamin_b2": 0.03, "vitamin_b3": 0.5,
+            "vitamin_b5": 0.21, "vitamin_b6": 0.11,
+            "copper": 0.11, "manganese": 0.93, "chromium": 0,
+            "phosphorus": 8, "sodium": 1, "saturated_fat": 0
+        }
+    },
+    {
+        "name": "Pomegranate",
+        "aliases": ["pomegranate", "anaar"],
+        "category": "fruit",
+        "default_serving_g": 175,
+        "default_unit": "cup",
+        "tags": ["fruit", "vegan", "no-cook", "quick", "antioxidant"],
+        "nutrients_per_100g": {
+            "calories": 83, "protein": 1.7, "fat": 1.2, "carbs": 18.7,
+            "fiber": 4.0, "omega3": 0.08,
+            "magnesium": 12, "potassium": 236, "zinc": 0.4, "iron": 0.3,
+            "calcium": 10, "selenium": 0.5, "iodine": 0.2, "choline": 7.6,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 38, "vitamin_c": 10.2,
+            "sugar": 13.7, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 0.6, "vitamin_k": 16.4,
+            "vitamin_b1": 0.07, "vitamin_b2": 0.05, "vitamin_b3": 0.3,
+            "vitamin_b5": 0.38, "vitamin_b6": 0.08,
+            "copper": 0.16, "manganese": 0.12, "chromium": 0,
+            "phosphorus": 36, "sodium": 3, "saturated_fat": 0.1
+        }
+    },
+    {
+        "name": "Guava",
+        "aliases": ["guava", "amrood"],
+        "category": "fruit",
+        "default_serving_g": 150,
+        "default_unit": "fruit",
+        "tags": ["fruit", "vegan", "no-cook", "quick", "vitamin-c"],
+        "nutrients_per_100g": {
+            "calories": 68, "protein": 2.6, "fat": 1.0, "carbs": 14.3,
+            "fiber": 5.4, "omega3": 0.1,
+            "magnesium": 22, "potassium": 417, "zinc": 0.2, "iron": 0.3,
+            "calcium": 18, "selenium": 0.6, "iodine": 0.2, "choline": 7.6,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 49, "vitamin_c": 228,
+            "sugar": 9.0, "caffeine": 0,
+            "vitamin_a": 31, "vitamin_e": 0.7, "vitamin_k": 2.6,
+            "vitamin_b1": 0.07, "vitamin_b2": 0.04, "vitamin_b3": 1.1,
+            "vitamin_b5": 0.45, "vitamin_b6": 0.11,
+            "copper": 0.23, "manganese": 0.15, "chromium": 0,
+            "phosphorus": 40, "sodium": 2, "saturated_fat": 0.3
+        }
+    },
+
+    # Additional grains / carbs
+    {
+        "name": "Pasta (whole wheat, cooked)",
+        "aliases": ["pasta", "spaghetti", "whole wheat pasta"],
+        "category": "grain",
+        "default_serving_g": 140,
+        "default_unit": "cup",
+        "tags": ["grain", "vegan", "vegetarian", "needs-cooking"],
+        "nutrients_per_100g": {
+            "calories": 124, "protein": 5.3, "fat": 0.5, "carbs": 26.5,
+            "fiber": 3.9, "omega3": 0.01,
+            "magnesium": 30, "potassium": 44, "zinc": 0.8, "iron": 1.4,
+            "calcium": 15, "selenium": 25, "iodine": 0, "choline": 7,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 7, "vitamin_c": 0,
+            "sugar": 0.8, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 0.2, "vitamin_k": 0.1,
+            "vitamin_b1": 0.09, "vitamin_b2": 0.04, "vitamin_b3": 0.9,
+            "vitamin_b5": 0.13, "vitamin_b6": 0.05,
+            "copper": 0.11, "manganese": 0.58, "chromium": 0,
+            "phosphorus": 89, "sodium": 1, "saturated_fat": 0.1
+        }
+    },
+    {
+        "name": "Couscous (cooked)",
+        "aliases": ["couscous"],
+        "category": "grain",
+        "default_serving_g": 160,
+        "default_unit": "cup",
+        "tags": ["grain", "vegan", "vegetarian", "needs-cooking", "quick"],
+        "nutrients_per_100g": {
+            "calories": 112, "protein": 3.8, "fat": 0.2, "carbs": 23.2,
+            "fiber": 1.4, "omega3": 0,
+            "magnesium": 8, "potassium": 58, "zinc": 0.3, "iron": 0.4,
+            "calcium": 8, "selenium": 27, "iodine": 0, "choline": 3,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 15, "vitamin_c": 0,
+            "sugar": 0.1, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 0, "vitamin_k": 0,
+            "vitamin_b1": 0.06, "vitamin_b2": 0.03, "vitamin_b3": 0.9,
+            "vitamin_b5": 0.37, "vitamin_b6": 0.05,
+            "copper": 0.04, "manganese": 0.28, "chromium": 0,
+            "phosphorus": 22, "sodium": 5, "saturated_fat": 0
+        }
+    },
+    {
+        "name": "Millet (cooked)",
+        "aliases": ["millet", "bajra", "ragi", "pearl millet"],
+        "category": "grain",
+        "default_serving_g": 175,
+        "default_unit": "cup",
+        "tags": ["grain", "vegan", "vegetarian", "needs-cooking", "gluten-free"],
+        "nutrients_per_100g": {
+            "calories": 119, "protein": 3.5, "fat": 1.0, "carbs": 23.7,
+            "fiber": 1.3, "omega3": 0.01,
+            "magnesium": 44, "potassium": 62, "zinc": 0.9, "iron": 0.6,
+            "calcium": 3, "selenium": 0.9, "iodine": 0.3, "choline": 11,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 19, "vitamin_c": 0,
+            "sugar": 0.1, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 0.1, "vitamin_k": 0,
+            "vitamin_b1": 0.11, "vitamin_b2": 0.08, "vitamin_b3": 1.3,
+            "vitamin_b5": 0.17, "vitamin_b6": 0.11,
+            "copper": 0.16, "manganese": 0.27, "chromium": 0,
+            "phosphorus": 100, "sodium": 2, "saturated_fat": 0.2
+        }
+    },
+    {
+        "name": "Corn / Sweet Corn (cooked)",
+        "aliases": ["corn", "sweet corn", "makka", "maize"],
+        "category": "grain",
+        "default_serving_g": 150,
+        "default_unit": "ear",
+        "tags": ["grain", "vegan", "vegetarian", "needs-cooking"],
+        "nutrients_per_100g": {
+            "calories": 96, "protein": 3.4, "fat": 1.5, "carbs": 21.0,
+            "fiber": 2.4, "omega3": 0.02,
+            "magnesium": 26, "potassium": 218, "zinc": 0.6, "iron": 0.5,
+            "calcium": 3, "selenium": 0.2, "iodine": 0.3, "choline": 29,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 42, "vitamin_c": 5.5,
+            "sugar": 4.5, "caffeine": 0,
+            "vitamin_a": 9, "vitamin_e": 0.1, "vitamin_k": 0.3,
+            "vitamin_b1": 0.09, "vitamin_b2": 0.06, "vitamin_b3": 1.7,
+            "vitamin_b5": 0.79, "vitamin_b6": 0.14,
+            "copper": 0.05, "manganese": 0.17, "chromium": 0,
+            "phosphorus": 77, "sodium": 1, "saturated_fat": 0.2
+        }
+    },
+
+    # Additional legumes
+    {
+        "name": "Kidney Beans (canned, drained)",
+        "aliases": ["kidney beans", "red beans"],
+        "category": "legume",
+        "default_serving_g": 130,
+        "default_unit": "cup",
+        "tags": ["legume", "vegan", "vegetarian", "no-cook", "high-fiber"],
+        "nutrients_per_100g": {
+            "calories": 84, "protein": 5.5, "fat": 0.5, "carbs": 15.4,
+            "fiber": 5.3, "omega3": 0.05,
+            "magnesium": 30, "potassium": 260, "zinc": 0.9, "iron": 1.4,
+            "calcium": 28, "selenium": 1, "iodine": 0.5, "choline": 21,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 50, "vitamin_c": 0.7,
+            "sugar": 1.0, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 0, "vitamin_k": 3.5,
+            "vitamin_b1": 0.12, "vitamin_b2": 0.06, "vitamin_b3": 0.6,
+            "vitamin_b5": 0.18, "vitamin_b6": 0.06,
+            "copper": 0.18, "manganese": 0.34, "chromium": 0,
+            "phosphorus": 102, "sodium": 256, "saturated_fat": 0.1
+        }
+    },
+    {
+        "name": "Hummus",
+        "aliases": ["hummus", "chickpea dip"],
+        "category": "legume",
+        "default_serving_g": 60,
+        "default_unit": "serving",
+        "tags": ["legume", "vegan", "vegetarian", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 166, "protein": 7.9, "fat": 9.6, "carbs": 14.3,
+            "fiber": 6.0, "omega3": 0.04,
+            "magnesium": 29, "potassium": 228, "zinc": 1.8, "iron": 2.4,
+            "calcium": 38, "selenium": 2.6, "iodine": 0.3, "choline": 27,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 41, "vitamin_c": 0,
+            "sugar": 0.3, "caffeine": 0,
+            "vitamin_a": 1, "vitamin_e": 0.6, "vitamin_k": 3.8,
+            "vitamin_b1": 0.07, "vitamin_b2": 0.05, "vitamin_b3": 0.6,
+            "vitamin_b5": 0.13, "vitamin_b6": 0.20,
+            "copper": 0.23, "manganese": 0.57, "chromium": 0,
+            "phosphorus": 176, "sodium": 379, "saturated_fat": 1.4
+        }
+    },
+
+    # Additional nuts & seeds
+    {
+        "name": "Cashews",
+        "aliases": ["cashews", "kaju"],
+        "category": "nut",
+        "default_serving_g": 30,
+        "default_unit": "handful",
+        "tags": ["nut", "vegan", "no-cook", "quick", "healthy-fat"],
+        "nutrients_per_100g": {
+            "calories": 553, "protein": 18.2, "fat": 43.9, "carbs": 30.2,
+            "fiber": 3.3, "omega3": 0.06,
+            "magnesium": 292, "potassium": 660, "zinc": 5.8, "iron": 6.7,
+            "calcium": 37, "selenium": 19.9, "iodine": 11, "choline": 61,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 25, "vitamin_c": 0,
+            "sugar": 5.9, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 0.9, "vitamin_k": 34.1,
+            "vitamin_b1": 0.42, "vitamin_b2": 0.06, "vitamin_b3": 1.1,
+            "vitamin_b5": 0.86, "vitamin_b6": 0.42,
+            "copper": 2.2, "manganese": 1.66, "chromium": 0,
+            "phosphorus": 593, "sodium": 12, "saturated_fat": 7.8
+        }
+    },
+    {
+        "name": "Sunflower Seeds",
+        "aliases": ["sunflower seeds"],
+        "category": "seed",
+        "default_serving_g": 30,
+        "default_unit": "handful",
+        "tags": ["seed", "vegan", "no-cook", "quick", "vitamin-e"],
+        "nutrients_per_100g": {
+            "calories": 584, "protein": 20.8, "fat": 51.5, "carbs": 20.0,
+            "fiber": 8.6, "omega3": 0.07,
+            "magnesium": 325, "potassium": 645, "zinc": 5.0, "iron": 5.3,
+            "calcium": 78, "selenium": 53, "iodine": 0.7, "choline": 55,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 227, "vitamin_c": 1.4,
+            "sugar": 2.6, "caffeine": 0,
+            "vitamin_a": 3, "vitamin_e": 35.2, "vitamin_k": 0,
+            "vitamin_b1": 1.48, "vitamin_b2": 0.36, "vitamin_b3": 8.3,
+            "vitamin_b5": 1.13, "vitamin_b6": 1.35,
+            "copper": 1.8, "manganese": 1.95, "chromium": 0,
+            "phosphorus": 660, "sodium": 9, "saturated_fat": 4.5
+        }
+    },
+    {
+        "name": "Pistachios",
+        "aliases": ["pistachios", "pista"],
+        "category": "nut",
+        "default_serving_g": 30,
+        "default_unit": "handful",
+        "tags": ["nut", "vegan", "no-cook", "quick", "healthy-fat"],
+        "nutrients_per_100g": {
+            "calories": 560, "protein": 20.2, "fat": 45.3, "carbs": 27.2,
+            "fiber": 10.6, "omega3": 0.25,
+            "magnesium": 121, "potassium": 1025, "zinc": 2.2, "iron": 3.9,
+            "calcium": 105, "selenium": 7, "iodine": 0.5, "choline": 71,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 51, "vitamin_c": 5.6,
+            "sugar": 7.7, "caffeine": 0,
+            "vitamin_a": 26, "vitamin_e": 2.9, "vitamin_k": 13.2,
+            "vitamin_b1": 0.87, "vitamin_b2": 0.16, "vitamin_b3": 1.3,
+            "vitamin_b5": 0.52, "vitamin_b6": 1.7,
+            "copper": 1.3, "manganese": 1.2, "chromium": 0,
+            "phosphorus": 490, "sodium": 1, "saturated_fat": 5.6
+        }
+    },
+
+    # Additional dairy
+    {
+        "name": "Mozzarella Cheese",
+        "aliases": ["mozzarella", "pizza cheese"],
+        "category": "dairy",
+        "default_serving_g": 30,
+        "default_unit": "g",
+        "tags": ["dairy", "vegetarian", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 280, "protein": 28.0, "fat": 17.1, "carbs": 3.1,
+            "fiber": 0, "omega3": 0.17,
+            "magnesium": 20, "potassium": 76, "zinc": 2.9, "iron": 0.4,
+            "calcium": 505, "selenium": 17, "iodine": 17, "choline": 15,
+            "vitamin_d": 0.4, "vitamin_b12": 2.3, "folate": 7, "vitamin_c": 0,
+            "sugar": 1.0, "caffeine": 0,
+            "vitamin_a": 179, "vitamin_e": 0.2, "vitamin_k": 2.3,
+            "vitamin_b1": 0.03, "vitamin_b2": 0.28, "vitamin_b3": 0.1,
+            "vitamin_b5": 0.14, "vitamin_b6": 0.04,
+            "copper": 0.01, "manganese": 0.01, "chromium": 0,
+            "phosphorus": 354, "sodium": 619, "saturated_fat": 10.9
+        }
+    },
+    {
+        "name": "Plain Yogurt (whole milk)",
+        "aliases": ["yogurt", "dahi", "curd"],
+        "category": "dairy",
+        "default_serving_g": 150,
+        "default_unit": "cup",
+        "tags": ["dairy", "vegetarian", "no-cook", "quick", "fermented"],
+        "nutrients_per_100g": {
+            "calories": 61, "protein": 3.5, "fat": 3.3, "carbs": 4.7,
+            "fiber": 0, "omega3": 0.03,
+            "magnesium": 11, "potassium": 155, "zinc": 0.6, "iron": 0.1,
+            "calcium": 121, "selenium": 2.2, "iodine": 14, "choline": 15,
+            "vitamin_d": 0.1, "vitamin_b12": 0.37, "folate": 7, "vitamin_c": 0.5,
+            "sugar": 4.7, "caffeine": 0,
+            "vitamin_a": 27, "vitamin_e": 0.1, "vitamin_k": 0.2,
+            "vitamin_b1": 0.03, "vitamin_b2": 0.14, "vitamin_b3": 0.1,
+            "vitamin_b5": 0.39, "vitamin_b6": 0.03,
+            "copper": 0.01, "manganese": 0, "chromium": 0,
+            "phosphorus": 95, "sodium": 46, "saturated_fat": 2.1
+        }
+    },
+
+    # Additional misc / international
+    {
+        "name": "Baked Potato (with skin)",
+        "aliases": ["baked potato", "jacket potato"],
+        "category": "vegetable",
+        "default_serving_g": 200,
+        "default_unit": "medium",
+        "tags": ["vegetable", "vegan", "vegetarian", "starchy", "needs-cooking"],
+        "nutrients_per_100g": {
+            "calories": 93, "protein": 2.5, "fat": 0.1, "carbs": 21.2,
+            "fiber": 2.2, "omega3": 0.01,
+            "magnesium": 27, "potassium": 535, "zinc": 0.4, "iron": 0.6,
+            "calcium": 15, "selenium": 0.4, "iodine": 1, "choline": 13,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 28, "vitamin_c": 9.6,
+            "sugar": 1.1, "caffeine": 0,
+            "vitamin_a": 1, "vitamin_e": 0, "vitamin_k": 2.0,
+            "vitamin_b1": 0.07, "vitamin_b2": 0.05, "vitamin_b3": 1.4,
+            "vitamin_b5": 0.56, "vitamin_b6": 0.31,
+            "copper": 0.12, "manganese": 0.15, "chromium": 1.7,
+            "phosphorus": 70, "sodium": 10, "saturated_fat": 0
+        }
+    },
+    {
+        "name": "Soy Milk (unsweetened)",
+        "aliases": ["soy milk", "soya milk"],
+        "category": "dairy",
+        "default_serving_g": 250,
+        "default_unit": "cup",
+        "tags": ["vegan", "vegetarian", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 33, "protein": 2.9, "fat": 1.6, "carbs": 1.2,
+            "fiber": 0.4, "omega3": 0.04,
+            "magnesium": 19, "potassium": 118, "zinc": 0.3, "iron": 0.6,
+            "calcium": 25, "selenium": 0.5, "iodine": 2, "choline": 23,
+            "vitamin_d": 1.2, "vitamin_b12": 0.45, "folate": 18, "vitamin_c": 0,
+            "sugar": 0.4, "caffeine": 0,
+            "vitamin_a": 55, "vitamin_e": 0, "vitamin_k": 3,
+            "vitamin_b1": 0.04, "vitamin_b2": 0.18, "vitamin_b3": 0.5,
+            "vitamin_b5": 0.1, "vitamin_b6": 0.05,
+            "copper": 0.13, "manganese": 0.22, "chromium": 0,
+            "phosphorus": 52, "sodium": 51, "saturated_fat": 0.2
+        }
+    },
+    {
+        "name": "Oat Milk (fortified)",
+        "aliases": ["oat milk"],
+        "category": "dairy",
+        "default_serving_g": 250,
+        "default_unit": "cup",
+        "tags": ["vegan", "vegetarian", "no-cook", "quick"],
+        "nutrients_per_100g": {
+            "calories": 48, "protein": 1.0, "fat": 1.5, "carbs": 7.0,
+            "fiber": 0.8, "omega3": 0.01,
+            "magnesium": 7, "potassium": 43, "zinc": 0.2, "iron": 0.3,
+            "calcium": 120, "selenium": 0, "iodine": 15, "choline": 3,
+            "vitamin_d": 1.5, "vitamin_b12": 0.38, "folate": 0, "vitamin_c": 0,
+            "sugar": 4.0, "caffeine": 0,
+            "vitamin_a": 48, "vitamin_e": 0.2, "vitamin_k": 0.5,
+            "vitamin_b1": 0.06, "vitamin_b2": 0.14, "vitamin_b3": 0.1,
+            "vitamin_b5": 0.03, "vitamin_b6": 0.02,
+            "copper": 0.01, "manganese": 0.05, "chromium": 0,
+            "phosphorus": 38, "sodium": 39, "saturated_fat": 0.2
+        }
+    },
+    {
+        "name": "Peanuts (roasted)",
+        "aliases": ["peanuts", "moongphali", "groundnuts"],
+        "category": "nut",
+        "default_serving_g": 30,
+        "default_unit": "handful",
+        "tags": ["nut", "vegan", "no-cook", "quick", "high-protein"],
+        "nutrients_per_100g": {
+            "calories": 587, "protein": 25.8, "fat": 49.2, "carbs": 16.1,
+            "fiber": 8.5, "omega3": 0.003,
+            "magnesium": 168, "potassium": 705, "zinc": 3.3, "iron": 4.6,
+            "calcium": 92, "selenium": 7.2, "iodine": 0, "choline": 52,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 145, "vitamin_c": 0,
+            "sugar": 4.7, "caffeine": 0,
+            "vitamin_a": 0, "vitamin_e": 8.3, "vitamin_k": 0,
+            "vitamin_b1": 0.64, "vitamin_b2": 0.14, "vitamin_b3": 12.1,
+            "vitamin_b5": 1.77, "vitamin_b6": 0.35,
+            "copper": 1.14, "manganese": 1.93, "chromium": 0,
+            "phosphorus": 376, "sodium": 18, "saturated_fat": 6.8
+        }
+    },
+    {
+        "name": "Mixed Seeds Trail Mix",
+        "aliases": ["trail mix", "seed mix"],
+        "category": "seed",
+        "default_serving_g": 40,
+        "default_unit": "handful",
+        "tags": ["seed", "nut", "vegan", "no-cook", "quick", "healthy-fat"],
+        "nutrients_per_100g": {
+            "calories": 520, "protein": 18.0, "fat": 38.0, "carbs": 30.0,
+            "fiber": 7.0, "omega3": 2.3,
+            "magnesium": 200, "potassium": 500, "zinc": 4.0, "iron": 5.0,
+            "calcium": 80, "selenium": 25, "iodine": 1, "choline": 40,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 80, "vitamin_c": 0.5,
+            "sugar": 12.0, "caffeine": 0,
+            "vitamin_a": 2, "vitamin_e": 12, "vitamin_k": 2,
+            "vitamin_b1": 0.5, "vitamin_b2": 0.2, "vitamin_b3": 3.5,
+            "vitamin_b5": 0.8, "vitamin_b6": 0.4,
+            "copper": 1.0, "manganese": 1.5, "chromium": 0,
+            "phosphorus": 400, "sodium": 10, "saturated_fat": 5.0
+        }
+    },
+    {
+        "name": "Sprouts (mixed, raw)",
+        "aliases": ["sprouts", "bean sprouts", "ankurit"],
+        "category": "vegetable",
+        "default_serving_g": 100,
+        "default_unit": "cup",
+        "tags": ["vegetable", "vegan", "no-cook", "quick", "high-protein"],
+        "nutrients_per_100g": {
+            "calories": 31, "protein": 3.0, "fat": 0.2, "carbs": 6.0,
+            "fiber": 1.8, "omega3": 0.01,
+            "magnesium": 21, "potassium": 149, "zinc": 0.4, "iron": 0.9,
+            "calcium": 13, "selenium": 0.6, "iodine": 0.3, "choline": 14,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 63, "vitamin_c": 13.2,
+            "sugar": 4.1, "caffeine": 0,
+            "vitamin_a": 1, "vitamin_e": 0.1, "vitamin_k": 33,
+            "vitamin_b1": 0.08, "vitamin_b2": 0.12, "vitamin_b3": 0.7,
+            "vitamin_b5": 0.38, "vitamin_b6": 0.09,
+            "copper": 0.16, "manganese": 0.19, "chromium": 0,
+            "phosphorus": 54, "sodium": 6, "saturated_fat": 0
+        }
+    },
+    {
+        "name": "Cottage Cheese / Paneer (fresh)",
+        "aliases": ["fresh paneer", "homemade paneer"],
+        "category": "dairy",
+        "default_serving_g": 80,
+        "default_unit": "g",
+        "tags": ["dairy", "vegetarian", "no-cook", "high-protein"],
+        "nutrients_per_100g": {
+            "calories": 98, "protein": 11.1, "fat": 4.3, "carbs": 3.4,
+            "fiber": 0, "omega3": 0.02,
+            "magnesium": 8, "potassium": 104, "zinc": 0.4, "iron": 0.1,
+            "calcium": 83, "selenium": 9.4, "iodine": 10, "choline": 18,
+            "vitamin_d": 0, "vitamin_b12": 0.45, "folate": 12, "vitamin_c": 0,
+            "sugar": 2.7, "caffeine": 0,
+            "vitamin_a": 41, "vitamin_e": 0, "vitamin_k": 0.1,
+            "vitamin_b1": 0.02, "vitamin_b2": 0.16, "vitamin_b3": 0.1,
+            "vitamin_b5": 0.56, "vitamin_b6": 0.07,
+            "copper": 0.03, "manganese": 0, "chromium": 0,
+            "phosphorus": 159, "sodium": 364, "saturated_fat": 1.7
+        }
+    },
+    {
+        "name": "Seaweed / Nori (dried)",
+        "aliases": ["nori", "seaweed", "dried seaweed"],
+        "category": "vegetable",
+        "default_serving_g": 5,
+        "default_unit": "sheet",
+        "tags": ["vegetable", "vegan", "no-cook", "iodine-rich"],
+        "nutrients_per_100g": {
+            "calories": 35, "protein": 5.8, "fat": 0.3, "carbs": 5.1,
+            "fiber": 0.3, "omega3": 0.04,
+            "magnesium": 2, "potassium": 80, "zinc": 1.1, "iron": 1.8,
+            "calcium": 70, "selenium": 0.7, "iodine": 1600, "choline": 10,
+            "vitamin_d": 0, "vitamin_b12": 0, "folate": 146, "vitamin_c": 39,
+            "sugar": 0.5, "caffeine": 0,
+            "vitamin_a": 260, "vitamin_e": 1.0, "vitamin_k": 4.0,
+            "vitamin_b1": 0.1, "vitamin_b2": 0.4, "vitamin_b3": 1.5,
+            "vitamin_b5": 0.3, "vitamin_b6": 0.2,
+            "copper": 0.3, "manganese": 1.0, "chromium": 0,
+            "phosphorus": 58, "sodium": 48, "saturated_fat": 0.1
+        }
+    },
 ]

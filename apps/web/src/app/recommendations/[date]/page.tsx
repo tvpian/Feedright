@@ -67,6 +67,22 @@ export default function RecommendationsPage() {
     }
   }
 
+  async function handleLogCombo(items: { food_id: string; amount_g: number }[]) {
+    if (!profile) return;
+    try {
+      for (const item of items) {
+        await api.logs.addEntry(profile.id, date, {
+          food_id: item.food_id,
+          amount_g: item.amount_g,
+          unit: "g",
+          meal_slot: "snack",
+          notes: "From combo recommendation",
+        });
+      }
+      load(); // refresh to update gaps
+    } catch {}
+  }
+
   return (
     <div className="max-w-xl mx-auto px-4 pt-6 pb-4 space-y-5">
       {/* Header */}
@@ -181,7 +197,7 @@ export default function RecommendationsPage() {
             <p className="text-center text-gray-400 text-sm py-8">No combos found.</p>
           ) : (
             result!.combos.map((rec, i) => (
-              <ComboRecommendationCard key={i} rec={rec} rank={i + 1} />
+              <ComboRecommendationCard key={i} rec={rec} rank={i + 1} onLogCombo={handleLogCombo} />
             ))
           )}
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Flame, Zap, ChevronDown, ChevronUp } from "lucide-react";
+import { Flame, Zap, ChevronDown, ChevronUp, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { clsx } from "clsx";
 import type { FoodRecommendation, ComboRecommendation } from "@/lib/types";
@@ -100,9 +100,10 @@ export function SingleRecommendationCard({ rec, rank, onLog }: SingleProps) {
 interface ComboProps {
   rec: ComboRecommendation;
   rank: number;
+  onLogCombo?: (foods: { food_id: string; amount_g: number }[]) => void;
 }
 
-export function ComboRecommendationCard({ rec, rank }: ComboProps) {
+export function ComboRecommendationCard({ rec, rank, onLogCombo }: ComboProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -123,12 +124,28 @@ export function ComboRecommendationCard({ rec, rank }: ComboProps) {
         </div>
       </div>
 
-      <div className="px-4 pb-3">
+      <div className="px-4 pb-3 flex items-center gap-2">
+        {onLogCombo && (
+          <button
+            onClick={() =>
+              onLogCombo(
+                rec.foods.map((f, i) => ({
+                  food_id: f.id,
+                  amount_g: rec.servings_g[i],
+                }))
+              )
+            }
+            className="btn-primary flex-1 py-2.5 flex items-center justify-center gap-1.5"
+          >
+            <PlusCircle size={14} /> Log All
+          </button>
+        )}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full py-2 border border-gray-200 text-gray-600 rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-gray-50"
+          className="py-2.5 px-3.5 rounded-xl text-sm font-semibold flex items-center gap-1 transition-all"
+          style={{ background: "#f3f4f6", color: "#6b7280" }}
         >
-          Details {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          Details {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
         </button>
       </div>
 
