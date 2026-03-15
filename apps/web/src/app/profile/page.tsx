@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@/lib/userContext";
 import { api } from "@/lib/api";
-import { User, ChevronRight, Settings, Scale, BookMarked, BarChart3, Lock, Unlock, KeySquare, LogOut, CalendarDays } from "lucide-react";
+import { User, ChevronRight, Settings, Scale, BookMarked, BarChart3, Lock, Unlock, KeySquare, LogOut, CalendarDays, Users, ShieldCheck, UserCircle } from "lucide-react";
 import { HEALTH_GOALS, HEALTH_CONDITIONS, NUTRIENT_LABELS, NUTRIENT_UNITS } from "@/lib/types";
-import type { DailyTargets } from "@/lib/types";
+import type { DailyTargets, UserProfile } from "@/lib/types";
 
 const ACTIVITY_LABELS: Record<string, string> = {
   sedentary: "Sedentary",
@@ -19,6 +19,9 @@ const ACTIVITY_LABELS: Record<string, string> = {
 export default function ProfilePage() {
   const { profile, profiles, setProfile, refreshProfiles, loading, lockProfile, switchProfile } = useUser();
   const [targetsData, setTargetsData] = useState<DailyTargets | null>(null);
+  const [coaches, setCoaches] = useState<UserProfile[]>([]);
+  const [clients, setClients] = useState<UserProfile[]>([]);
+  const [viewingClient, setViewingClient] = useState<UserProfile | null>(null);
 
   // PIN management state
   const [pinMode, setPinMode] = useState<"set" | "change" | "remove" | null>(null);
@@ -77,6 +80,12 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile?.id && profile.supplements?.length > 0) {
       api.targets.get(profile.id).then(setTargetsData).catch(() => {});
+    }
+    // Load coaches list for all profiles (client role selection)
+    api.profiles.listCoaches().then(setCoaches).catch(() => {});
+    // If current profile is a coach, load their clients
+    if (profile?.role === "coach") {
+      api.profiles.listClients(profile.id).then(setClients).catch(() => {});
     }
   }, [profile?.id, profile?.supplements]);
 
@@ -235,6 +244,169 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
+
+            {/* ── Role & Coach/Client Management ── */}
+            <div className="card p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#eff6ff" }}>
+                  <Users size={16} className="text-blue-600" />
+                </div>
+                <p className="font-bold text-sm">Role</p>
+                <span className="ml-auto text-[10px] px-2.5 py-0.5 rounded-xl font-bold capitalize" style={{
+                  background: profile.role === "coach" ? "#dbeafe" : profile.role === "client" ? "#fdf4ff" : "#f3f4f6",
+                  color: profile.role === "coach" ? "#1e40af" : profile.role === "client" ? "#7e22ce" : "#6b7280",
+                }}>
+                  {profile.role || "solo"}
+                </span>
+              </div>
+
+              {/* Role selection */}
+              <div className="flex gap-2">
+                {(["solo", "coach", "client"] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={async () => {
+                      if (r === profile.role) return;
+                      await api.profiles.update(profile.id, { role: r, coach_id: null } as any);
+                      await refreshProfiles();
+                      if (r === "coach") {
+                        api.profiles.listClients(profile.id).then(setClients).catch(() => {});
+                      }
+                    }}
+                    className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                      profile.role === r
+                        ? r === "coach" ? "bg-blue-600 text-white" : r === "client" ? "bg-purple-600 text-white" : "bg-gray-800 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    {r === "solo" ? "Solo" : r === "coach" ? "Coach" : "Client"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Coach: show client list */}
+              {profile.role === "coach" && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Your Clients ({clients.length})
+                  </p>
+                  {clients.length === 0 ? (
+                    <p className="text-xs text-gray-400">No clients yet. Clients can select you as their coach from their profile.</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {clients.map((c) => (
+                        <button
+                          key={c.id}
+                          onClick={() => setViewingClient(viewingClient?.id === c.id ? null : c)}
+                          className="w-full flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-gray-50 text-left"
+                          style={viewingClient?.id === c.id ? { background: "#eff6ff" } : {}}
+                        >
+                          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
+                            style={{ background: "linear-gradient(135deg,#3b82f6,#8b5cf6)" }}>
+                            {c.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate">{c.name}</p>
+                            <p className="text-[11px] text-gray-400">{c.age}y · {c.weight_kg}kg · {ACTIVITY_LABELS[c.activity_level] ?? c.activity_level}</p>
+                          </div>
+                          <ChevronRight size={14} className="text-gray-300" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {viewingClient && (
+                    <div className="rounded-xl p-4 space-y-2" style={{ background: "#f8fafc" }}>
+                      <p className="text-xs font-bold text-blue-700">Viewing: {viewingClient.name}</p>
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div><span className="text-gray-400">Age:</span> <span className="font-semibold">{viewingClient.age}y</span></div>
+                        <div><span className="text-gray-400">Weight:</span> <span className="font-semibold">{viewingClient.weight_kg}kg</span></div>
+                        <div><span className="text-gray-400">Height:</span> <span className="font-semibold">{viewingClient.height_cm}cm</span></div>
+                        <div><span className="text-gray-400">Activity:</span> <span className="font-semibold">{ACTIVITY_LABELS[viewingClient.activity_level] ?? viewingClient.activity_level}</span></div>
+                      </div>
+                      {viewingClient.health_goals?.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {viewingClient.health_goals.map((g) => {
+                            const goal = HEALTH_GOALS.find((hg) => hg.value === g);
+                            return <span key={g} className="text-[10px] px-2 py-0.5 rounded-lg font-semibold" style={{ background: "#dbeafe", color: "#1e40af" }}>
+                              {goal ? `${goal.icon} ${goal.label}` : g}
+                            </span>;
+                          })}
+                        </div>
+                      )}
+                      <div className="flex gap-2 pt-1">
+                        <Link
+                          href={`/recommendations/${new Date().toISOString().split("T")[0]}?viewAs=${viewingClient.id}`}
+                          className="flex-1 py-2 text-xs font-bold rounded-xl text-center text-white" style={{ background: "linear-gradient(135deg,#3b82f6,#8b5cf6)" }}
+                        >
+                          View Recommendations
+                        </Link>
+                        <Link
+                          href={`/insights?viewAs=${viewingClient.id}`}
+                          className="flex-1 py-2 text-xs font-bold rounded-xl text-center" style={{ background: "#dbeafe", color: "#1e40af" }}
+                        >
+                          View Insights
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Client: coach selection */}
+              {profile.role === "client" && (
+                <div className="space-y-2">
+                  {profile.coach_id ? (
+                    <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "#fdf4ff" }}>
+                      <ShieldCheck size={18} className="text-purple-600 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400">Your Coach</p>
+                        <p className="text-sm font-semibold text-purple-800">
+                          {coaches.find((c) => c.id === profile.coach_id)?.name ?? "Coach"}
+                        </p>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          await api.profiles.removeCoach(profile.id);
+                          await refreshProfiles();
+                        }}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-xl" style={{ background: "#fff1f2", color: "#be123c" }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Select a Coach</p>
+                      {coaches.length === 0 ? (
+                        <p className="text-xs text-gray-400">No coaches available. Ask your coach to set their role to "Coach".</p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {coaches.map((c) => (
+                            <button
+                              key={c.id}
+                              onClick={async () => {
+                                await api.profiles.selectCoach(profile.id, c.id);
+                                await refreshProfiles();
+                              }}
+                              className="w-full flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-purple-50 text-left"
+                            >
+                              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
+                                style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
+                                {c.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold">{c.name}</p>
+                              </div>
+                              <span className="text-xs font-semibold text-purple-600">Select →</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
 
             <Link
               href={`/profile/${profile.id}/edit`}

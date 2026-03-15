@@ -62,6 +62,7 @@ class RecommendationRequest:
     avoid_ids: list[str] = field(default_factory=list)
     avoid_tags: list[str] = field(default_factory=list)
     preferred_tags: list[str] = field(default_factory=list)
+    require_tags: list[str] = field(default_factory=list)  # only include foods having at least one of these tags
     max_calories: Optional[float] = None   # hard calorie ceiling on results
     constraints: list[str] = field(default_factory=list)   # e.g. "no-cook", "vegetarian"
     config: ScoringConfig = field(default_factory=lambda: DEFAULT_CONFIG)
@@ -226,6 +227,20 @@ _ANIMAL_TAGS = frozenset({"meat", "poultry", "fish", "seafood", "dairy", "egg"})
 _NON_VEG_CATEGORIES = frozenset({"protein"})  # protein category = meat/fish/eggs
 
 
+# Name patterns that should be excluded from recommendations
+# (baby food, formulas, supplements, powders, diet shakes, freeze-dried concentrates)
+_EXCLUDE_FROM_RECS_PATTERNS = frozenset({
+    "baby", "infant", "formula", "gerber", "babyfood",
+    "protein supplement", "shake mix", "slimfast", "slim-fast",
+    "freeze-dried", "freeze dried", "dehydrated",
+    "nutrition bar", "energy bar", "protein bar",
+    "meal replacement", "not reconstituted",
+})
+
+# Categories that are not useful as standalone meal recommendations
+_LOW_QUALITY_CATEGORIES = frozenset({"other"})
+
+
 def _is_allowed(food: FoodItem, request: RecommendationRequest) -> bool:
     if food.id in request.avoid_ids:
         return False
@@ -234,15 +249,25 @@ def _is_allowed(food: FoodItem, request: RecommendationRequest) -> bool:
             return False
 
     tags = set(food.tags)
+    name_lower = food.name.lower()
+
+    # ── Quality gate: exclude baby food, formulas, etc. ──
+    if any(pat in name_lower for pat in _EXCLUDE_FROM_RECS_PATTERNS):
+        return False
+
+    # Exclude "other" category unless it was hand-curated (no fdc: tag)
+    if food.category == "other" and any(t.startswith("fdc:") for t in food.tags):
+        return False
+
+    # ── Cuisine / require_tags filter ──
+    if request.require_tags:
+        if not (tags & set(request.require_tags)):
+            return False
 
     for constraint in request.constraints:
         if constraint == "vegetarian":
-            # Exclude anything tagged as animal flesh
             if tags & _MEAT_TAGS:
                 return False
-            # Fallback: if food has no semantic tags (e.g. USDA import with only
-            # fdc:xxx), use category as a proxy — "protein" category foods that
-            # aren't explicitly tagged as egg/dairy are likely meat/fish.
             if food.category == "protein" and not (tags & {"egg", "dairy", "legume", "vegan", "vegetarian"}):
                 return False
 
@@ -253,7 +278,6 @@ def _is_allowed(food: FoodItem, request: RecommendationRequest) -> bool:
         elif constraint == "vegan":
             if tags & _ANIMAL_TAGS:
                 return False
-            # Fallback for untagged USDA foods
             if food.category in ("protein", "dairy") and not (tags & {"legume", "vegan"}):
                 return False
 

@@ -33,6 +33,8 @@ const defaultForm: ProfileCreate = {
   health_goals: [],
   health_conditions: [],
   supplements: [],
+  role: "solo",
+  coach_id: null,
 };
 
 type Step = "basics" | "goals" | "conditions" | "supplements" | "diet";

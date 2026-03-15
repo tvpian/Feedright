@@ -30,6 +30,8 @@ def create_profile(body: ProfileCreate, db: Session = Depends(get_db)):
         health_goals=json.dumps(body.health_goals),
         health_conditions=json.dumps(body.health_conditions),
         supplements_json=json.dumps([s.model_dump() for s in body.supplements]),
+        role=body.role,
+        coach_id=body.coach_id,
     )
     db.add(row)
     db.commit()
@@ -40,6 +42,13 @@ def create_profile(body: ProfileCreate, db: Session = Depends(get_db)):
 @router.get("", response_model=list[ProfileOut])
 def list_profiles(db: Session = Depends(get_db)):
     return [_to_out(r) for r in db.query(UserDB).filter(UserDB.is_active == True).all()]
+
+
+@router.get("/coaches", response_model=list[ProfileOut])
+def list_coaches(db: Session = Depends(get_db)):
+    """List all coach profiles (for client coach selection)."""
+    rows = db.query(UserDB).filter(UserDB.is_active == True, UserDB.role == "coach").all()
+    return [_to_out(r) for r in rows]
 
 
 @router.get("/{user_id}", response_model=ProfileOut)
@@ -53,6 +62,7 @@ def update_profile(user_id: str, body: ProfileUpdate, db: Session = Depends(get_
     row = _get_or_404(user_id, db)
     updates = body.model_dump(exclude_none=True)
     _JSON_FIELDS = {"dietary_preferences", "avoid_foods"}
+    _DIRECT_FIELDS = {"role", "coach_id"}
     for field, value in updates.items():
         if field == "supplements":
             setattr(row, "supplements_json", json.dumps([s if isinstance(s, dict) else s.model_dump() for s in value]))
@@ -62,6 +72,8 @@ def update_profile(user_id: str, body: ProfileUpdate, db: Session = Depends(get_
             setattr(row, "health_conditions", json.dumps(value))
         elif field in _JSON_FIELDS:
             setattr(row, field, json.dumps(value))
+        elif field in _DIRECT_FIELDS:
+            setattr(row, field, value)
         else:
             setattr(row, field, value)
     db.commit()
@@ -133,4 +145,48 @@ def _to_out(row: UserDB) -> ProfileOut:
         supplements=[SupplementIn(**s) for s in supps_raw],
         has_pin=bool(row.pin_hash),
         water_goal_ml=row.water_goal_ml,
+        role=getattr(row, 'role', None) or "solo",
+        coach_id=getattr(row, 'coach_id', None),
     )
+
+
+# ── Coach-Client endpoints ───────────────────────────────────────────────────────
+
+@router.get("/{user_id}/clients", response_model=list[ProfileOut])
+def list_clients(user_id: str, db: Session = Depends(get_db)):
+    """List all clients assigned to a coach."""
+    coach = _get_or_404(user_id, db)
+    if getattr(coach, 'role', 'solo') != "coach":
+        raise HTTPException(403, "Only coaches can list their clients")
+    rows = db.query(UserDB).filter(
+        UserDB.is_active == True,
+        UserDB.coach_id == user_id,
+    ).all()
+    return [_to_out(r) for r in rows]
+
+
+@router.post("/{user_id}/select-coach/{coach_id}", response_model=ProfileOut)
+def select_coach(user_id: str, coach_id: str, db: Session = Depends(get_db)):
+    """Client selects a coach. Sets role to 'client' if currently 'solo'."""
+    client = _get_or_404(user_id, db)
+    coach = _get_or_404(coach_id, db)
+    if getattr(coach, 'role', 'solo') != "coach":
+        raise HTTPException(400, f"Profile {coach_id} is not a coach")
+    if getattr(client, 'role', 'solo') == "coach":
+        raise HTTPException(400, "A coach cannot be a client")
+    client.role = "client"
+    client.coach_id = coach_id
+    db.commit()
+    db.refresh(client)
+    return _to_out(client)
+
+
+@router.post("/{user_id}/remove-coach", response_model=ProfileOut)
+def remove_coach(user_id: str, db: Session = Depends(get_db)):
+    """Client removes their coach. Reverts to 'solo' role."""
+    client = _get_or_404(user_id, db)
+    client.coach_id = None
+    client.role = "solo"
+    db.commit()
+    db.refresh(client)
+    return _to_out(client)

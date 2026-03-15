@@ -21,6 +21,15 @@ const CONSTRAINTS_OPTIONS = [
   { label: "Vegan",       value: "vegan" },
 ];
 
+const CUISINE_OPTIONS = [
+  { label: "🇮🇳 Indian", value: "indian" },
+  { label: "🍎 Whole Foods", value: "whole-food" },
+  { label: "🌿 Plant-Based", value: "vegan" },
+  { label: "🥚 High Protein", value: "high-protein" },
+  { label: "🌾 Grain-Based", value: "grain" },
+  { label: "🤗 Comfort Foods", value: "no-cook" },
+];
+
 export default function RecommendationsPage() {
   const { date } = useParams<{ date: string }>();
   const { profile } = useUser();
@@ -28,6 +37,7 @@ export default function RecommendationsPage() {
   const [result, setResult] = useState<RecommendationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [constraints, setConstraints] = useState<string[]>([]);
+  const [cuisineTags, setCuisineTags] = useState<string[]>([]);
   const [maxCal, setMaxCal] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState<"singles" | "combos">("singles");
@@ -43,13 +53,14 @@ export default function RecommendationsPage() {
         api.recommendations.get(profile.id, date, {
           constraints,
           max_calories: maxCal ? Number(maxCal) : undefined,
+          require_tags: cuisineTags,
         }),
       ]);
       setGaps(g);
       setResult(r);
     } catch {}
     setLoading(false);
-  }, [profile, date, constraints, maxCal]);
+  }, [profile, date, constraints, maxCal, cuisineTags]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -109,7 +120,7 @@ export default function RecommendationsPage() {
       {showFilters && (
         <div className="card p-4 space-y-3">
           <div>
-            <p className="text-sm font-bold mb-2">Constraints</p>
+            <p className="text-sm font-bold mb-2">Dietary</p>
             <div className="flex flex-wrap gap-2">
               {CONSTRAINTS_OPTIONS.map(({ label, value }) => (
                 <button
@@ -118,6 +129,25 @@ export default function RecommendationsPage() {
                   className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
                   style={constraints.includes(value)
                     ? { background: "linear-gradient(135deg,#0a7140,#3acb7d)", color: "white" }
+                    : { background: "#f3f4f6", color: "#6b7280" }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-bold mb-2">Cuisine / Style</p>
+            <div className="flex flex-wrap gap-2">
+              {CUISINE_OPTIONS.map(({ label, value }) => (
+                <button
+                  key={value}
+                  onClick={() => setCuisineTags((prev) =>
+                    prev.includes(value) ? prev.filter((t) => t !== value) : [...prev, value]
+                  )}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style={cuisineTags.includes(value)
+                    ? { background: "linear-gradient(135deg,#7c3aed,#a855f7)", color: "white" }
                     : { background: "#f3f4f6", color: "#6b7280" }}
                 >
                   {label}

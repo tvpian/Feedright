@@ -63,6 +63,8 @@ export interface UserProfile {
   supplements: SupplementInput[];
   has_pin?: boolean;
   water_goal_ml?: number | null;  // Custom daily water target in ml
+  role: "solo" | "coach" | "client";
+  coach_id?: string | null;
 }
 
 export interface ProfileCreate extends Omit<UserProfile, "id"> {}

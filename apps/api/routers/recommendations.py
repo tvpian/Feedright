@@ -98,6 +98,7 @@ def get_recommendations(
         avoid_ids=avoid_ids,
         avoid_tags=[],
         preferred_tags=body.preferred_tags,
+        require_tags=getattr(body, 'require_tags', []),
         max_calories=body.max_calories,
         constraints=body.constraints,
     ))

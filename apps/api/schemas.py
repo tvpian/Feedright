@@ -29,6 +29,8 @@ class ProfileCreate(BaseModel):
     health_conditions: list[str] = []
     supplements: list[SupplementIn] = []
     water_goal_ml: Optional[float] = None  # Custom daily water target
+    role: str = "solo"  # "solo", "coach", "client"
+    coach_id: Optional[str] = None
 
 
 class ProfileOut(ProfileCreate):
@@ -53,6 +55,8 @@ class ProfileUpdate(BaseModel):
     health_conditions: Optional[list[str]] = None
     supplements: Optional[list[SupplementIn]] = None
     water_goal_ml: Optional[float] = None
+    role: Optional[str] = None
+    coach_id: Optional[str] = None
 
 
 # ── Foods ─────────────────────────────────────────────────────────────────────
@@ -187,6 +191,7 @@ class RecommendationRequest(BaseModel):
     max_calories: Optional[float] = None
     constraints: list[str] = []   # "no-cook", "vegetarian", "vegan", etc.
     preferred_tags: list[str] = []
+    require_tags: list[str] = []  # cuisine filters: only show foods with ANY of these tags
 
 
 # ── Saved Meals ───────────────────────────────────────────────────────────────

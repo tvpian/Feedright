@@ -58,6 +58,9 @@ class UserDB(Base):
     health_conditions   = Column(Text, default="[]")       # JSON list of HealthCondition values
     supplements_json    = Column(Text, default="[]")       # JSON list of {name, daily_nutrients}
     water_goal_ml       = Column(Float, nullable=True)      # Custom daily water goal; NULL = use default (2500)
+    # ── Role / Coach-Client ──
+    role                = Column(String, default="solo")    # "solo", "coach", "client"
+    coach_id            = Column(String, ForeignKey("users.id"), nullable=True)  # if role=client
 
 
 class FoodDB(Base):

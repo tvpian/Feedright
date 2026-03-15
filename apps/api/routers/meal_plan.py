@@ -60,6 +60,8 @@ class MealPlanRequest(BaseModel):
     constraints: list[str] = []  # "no-cook", "vegetarian", "vegan"
     max_daily_calories: float | None = None
     seed: int | None = None  # random seed for variety; different seed = different plan
+    preferred_tags: list[str] = []  # boost these tags
+    require_tags: list[str] = []  # cuisine filter: only foods with these tags
 
 
 # ── Slot definitions ──────────────────────────────────────────────────────────
@@ -134,7 +136,8 @@ def generate_meal_plan(
                 food_library=food_map,
                 avoid_ids=avoid_ids,
                 avoid_tags=[],
-                preferred_tags=[],
+                preferred_tags=body.preferred_tags,
+                require_tags=body.require_tags,
                 max_calories=slot_cal_budget * 1.2,  # slight leeway
                 constraints=body.constraints,
                 config=config,

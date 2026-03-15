@@ -76,6 +76,17 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ pin: "" }),
       }),
+    listCoaches: () => _fetch<UserProfile[]>(`${BASE}/profiles/coaches`),
+    listClients: (coachId: string) =>
+      _fetch<UserProfile[]>(`${BASE}/profiles/${coachId}/clients`),
+    selectCoach: (userId: string, coachId: string) =>
+      _fetch<UserProfile>(`${BASE}/profiles/${userId}/select-coach/${coachId}`, {
+        method: "POST",
+      }),
+    removeCoach: (userId: string) =>
+      _fetch<UserProfile>(`${BASE}/profiles/${userId}/remove-coach`, {
+        method: "POST",
+      }),
   },
 
   // ── Foods ───────────────────────────────────────────────────────────────────
@@ -158,7 +169,7 @@ export const api = {
     get: (
       userId: string,
       date: string,
-      opts?: { max_calories?: number; constraints?: string[]; preferred_tags?: string[] }
+      opts?: { max_calories?: number; constraints?: string[]; preferred_tags?: string[]; require_tags?: string[] }
     ) =>
       _fetch<RecommendationResult>(`${BASE}/recommendations/${userId}/${date}`, {
         method: "POST",
@@ -223,7 +234,7 @@ export const api = {
   mealPlan: {
     generate: (
       userId: string,
-      opts?: { start_date?: string; constraints?: string[]; max_daily_calories?: number; seed?: number }
+      opts?: { start_date?: string; constraints?: string[]; max_daily_calories?: number; seed?: number; preferred_tags?: string[]; require_tags?: string[] }
     ) =>
       _fetch<import("./types").WeeklyPlan>(`${BASE}/meal-plan/${userId}`, {
         method: "POST",

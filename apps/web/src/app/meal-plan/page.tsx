@@ -13,6 +13,15 @@ const CONSTRAINTS_OPTIONS = [
   { label: "Vegan", value: "vegan" },
 ];
 
+const CUISINE_OPTIONS = [
+  { label: "🇮🇳 Indian", value: "indian" },
+  { label: "🍎 Whole Foods", value: "whole-food" },
+  { label: "🌿 Plant-Based", value: "vegan" },
+  { label: "🥚 High Protein", value: "high-protein" },
+  { label: "🌾 Grain-Based", value: "grain" },
+  { label: "🤗 Comfort Foods", value: "no-cook" },
+];
+
 const SLOT_ICONS: Record<string, typeof Coffee> = {
   Breakfast: Coffee,
   Lunch: Utensils,
@@ -33,6 +42,7 @@ export default function MealPlanPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [constraints, setConstraints] = useState<string[]>([]);
+  const [cuisineTags, setCuisineTags] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [loggingDay, setLoggingDay] = useState<string | null>(null);
   const [loggedDays, setLoggedDays] = useState<Set<string>>(new Set());
@@ -47,6 +57,7 @@ export default function MealPlanPage() {
         start_date: format(new Date(), "yyyy-MM-dd"),
         constraints,
         seed: Math.floor(Math.random() * 2147483647),
+        require_tags: cuisineTags,
       });
       setPlan(result);
     } catch (err: any) {
@@ -122,22 +133,44 @@ export default function MealPlanPage() {
 
       {/* Constraints filter */}
       {showFilters && (
-        <div className="card p-4 space-y-2">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Dietary Filters</p>
-          <div className="flex flex-wrap gap-2">
-            {CONSTRAINTS_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => toggleConstraint(opt.value)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  constraints.includes(opt.value)
-                    ? "bg-brand-600 text-white border-brand-600"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-brand-300"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
+        <div className="card p-4 space-y-3">
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Dietary Filters</p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {CONSTRAINTS_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => toggleConstraint(opt.value)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                    constraints.includes(opt.value)
+                      ? "bg-brand-600 text-white border-brand-600"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-brand-300"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cuisine / Style</p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {CUISINE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setCuisineTags((prev) =>
+                    prev.includes(opt.value) ? prev.filter((t) => t !== opt.value) : [...prev, opt.value]
+                  )}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                    cuisineTags.includes(opt.value)
+                      ? "bg-purple-600 text-white border-purple-600"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-purple-300"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
           <button
             onClick={generate}
