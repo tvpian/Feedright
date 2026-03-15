@@ -20,6 +20,7 @@ COPY apps/api/      ./apps/api/
 COPY packages/      ./packages/
 COPY alembic/       ./alembic/
 COPY alembic.ini    ./alembic.ini
+COPY scripts/       ./scripts/
 
 # Make both apps/ and packages/ importable (mirrors Makefile PYTHONPATH)
 ENV PYTHONPATH=/app/apps:/app/packages

@@ -60,17 +60,25 @@ _NID_MAP: dict[int, tuple[str, float]] = {
     1166: ("vitamin_b6",    1.0),   # mg
     1177: ("folate",        1.0),   # µg
     1190: ("biotin",        1.0),   # µg
+    # Trace minerals
+    1091: ("phosphorus",    1.0),   # mg
+    1098: ("copper",        1.0),   # mg
+    1103: ("manganese",     1.0),   # mg
+    1096: ("chromium",      1.0),   # µg
+    # Omega-3 forms (accumulate into omega3)
+    1278: ("omega3",        1000.0),# g → mg (EPA)
+    1272: ("omega3",        1000.0),# g → mg (DHA)
 }
 
 _FDC_CAT_MAP = [
     (["dairy", "egg", "milk", "cheese", "cream", "butter", "yogurt"], "dairy"),
     (["poultry", "beef", "pork", "lamb", "veal", "fish", "shellfish",
       "seafood", "meat", "game", "sausage", "bacon"],                 "protein"),
-    (["vegetable", "legume", "bean", "lentil", "tofu"],               "vegetables"),
-    (["fruit", "juice", "berry"],                                     "fruits"),
+    (["vegetable", "legume", "bean", "lentil", "tofu"],               "vegetable"),
+    (["fruit", "juice", "berry"],                                     "fruit"),
     (["grain", "baked", "cereal", "bread", "pasta", "rice", "oat",
-      "flour", "cracker", "noodle"],                                  "grains"),
-    (["beverage", "drink", "coffee", "tea", "soda", "water"],         "beverages"),
+      "flour", "cracker", "noodle"],                                  "grain"),
+    (["beverage", "drink", "coffee", "tea", "soda", "water"],         "beverage"),
 ]
 
 import re as _re
@@ -161,7 +169,12 @@ def _fdc_to_foodout(item: dict, fdc_id: int) -> FoodOut:
             key, factor = _NID_MAP[nid]
             if normalize and serving_size > 0:
                 val = val * 100.0 / serving_size
-            nuts[key] = round(val * factor, 3)
+            adj = round(val * factor, 3)
+            # Accumulate omega-3 forms (ALA + EPA + DHA)
+            if key == "omega3":
+                nuts[key] = round(nuts.get(key, 0) + adj, 3)
+            else:
+                nuts[key] = adj
 
     cat_raw = item.get("foodCategory") or item.get("brandedFoodCategory") or ""
     fdc_tag = f"fdc:{fdc_id}"
@@ -204,7 +217,7 @@ def _fdc_to_foodout(item: dict, fdc_id: int) -> FoodOut:
 def search_foods(
     q: str = Query("", description="Name/alias search term"),
     category: str = Query("", description="Filter by category"),
-    limit: int = Query(30, ge=1, le=100),
+    limit: int = Query(30, ge=1, le=500),
     db: Session = Depends(get_db),
 ):
     from difflib import SequenceMatcher
