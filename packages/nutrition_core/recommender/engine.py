@@ -228,17 +228,9 @@ _NON_VEG_CATEGORIES = frozenset({"protein"})  # protein category = meat/fish/egg
 
 
 # Name patterns that should be excluded from recommendations
-# (baby food, formulas, supplements, powders, diet shakes, freeze-dried concentrates)
 _EXCLUDE_FROM_RECS_PATTERNS = frozenset({
     "baby", "infant", "formula", "gerber", "babyfood",
-    "protein supplement", "shake mix", "slimfast", "slim-fast",
-    "freeze-dried", "freeze dried", "dehydrated",
-    "nutrition bar", "energy bar", "protein bar",
-    "meal replacement", "not reconstituted",
 })
-
-# Categories that are not useful as standalone meal recommendations
-_LOW_QUALITY_CATEGORIES = frozenset({"other"})
 
 
 def _is_allowed(food: FoodItem, request: RecommendationRequest) -> bool:
@@ -251,12 +243,17 @@ def _is_allowed(food: FoodItem, request: RecommendationRequest) -> bool:
     tags = set(food.tags)
     name_lower = food.name.lower()
 
-    # ── Quality gate: exclude baby food, formulas, etc. ──
-    if any(pat in name_lower for pat in _EXCLUDE_FROM_RECS_PATTERNS):
+    # ── Quality gate: exclude ALL USDA bulk-import foods from recommendations.
+    # USDA foods contain too many fortified cereals, concentrated powders,
+    # dried/dehydrated items, and obscure ingredients with inflated per-100g
+    # nutrient values that overwhelm recommendations.  They remain available
+    # for manual search & logging.  Only hand-curated seed foods are used
+    # for recommendations.
+    if any(t.startswith("fdc:") for t in food.tags):
         return False
 
-    # Exclude "other" category unless it was hand-curated (no fdc: tag)
-    if food.category == "other" and any(t.startswith("fdc:") for t in food.tags):
+    # Also exclude baby food by name pattern (safety net for seed foods)
+    if any(pat in name_lower for pat in _EXCLUDE_FROM_RECS_PATTERNS):
         return False
 
     # ── Cuisine / require_tags filter ──
